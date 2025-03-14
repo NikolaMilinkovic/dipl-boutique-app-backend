@@ -5,7 +5,7 @@
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express from "express";
-import { NextFunction, Request, Response } from "express";
+import { Request, Response } from "express";
 import createError from "http-errors";
 import logger from "morgan";
 import path from "path";
