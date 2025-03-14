@@ -1,15 +1,17 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import express from "express";
+import { NextFunction, Request, Response } from "express";
 import createError from "http-errors";
 import logger from "morgan";
 import path from "path";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
+
 dotenv.config();
 
 const app = express();
@@ -40,13 +42,13 @@ app.use(function (req, res, next) {
 });
 
 // error handler
-app.use(function (err, req, res, next) {
+app.use(function (err: any, req: Request, res: Response) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get("env") === "development" ? err : {};
 
   // render the error page
-  res.status(err.status || 500);
+  res.status(err.status ?? 500);
   res.json({
     error: process.env.NODE_ENV === "development" ? err : {},
     message: err.message,
