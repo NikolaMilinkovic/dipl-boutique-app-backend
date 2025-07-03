@@ -28,8 +28,10 @@
     "jade": "^0.29.0",
     "mongoose": "^8.15.0",
     "morgan": "~1.9.1",
+    "multer": "^2.0.1",
     "passport": "^0.7.0",
-    "passport-jwt": "^4.0.1"
+    "passport-jwt": "^4.0.1",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
@@ -40,6 +42,7 @@
     "@types/debug": "^4.1.12",
     "@types/express": "^5.0.0",
     "@types/morgan": "^1.9.9",
+    "@types/multer": "^1.4.13",
     "@types/node": "^22.13.10",
     "@types/passport": "^1.0.17",
     "@types/passport-jwt": "^4.0.1",

@@ -12,6 +12,7 @@
 import http from "http";
 
 import app from "./app.js";
+import { initSocket } from "./socket/initSocket.js";
 // const log = debug("dipl-boutique-app-backend:server");
 
 /**
@@ -24,8 +25,12 @@ app.set("port", port);
 /**
  * Create HTTP server.
  */
-
 const server = http.createServer(app);
+
+/**
+ * Sockets.
+ */
+initSocket(server);
 
 /**
  * Listen on provided port, on all network interfaces.

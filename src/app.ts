@@ -26,44 +26,50 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
 
-// ===============[ MongoDB connection ]=============== //
+// ===========================[ MongoDB connection ]=========================== //
 const conn_string = process.env.DB_URI ?? "";
 if (!conn_string) {
   console.error("[ERROR] Missing DB connection string");
   process.exit(1);
 }
-mongoose
-  .connect(conn_string)
-  .then(() => {
-    // initializeAppSettings();
-    // initializeProductDisplayCounter();
-    // initializeLastUpdatedTracker();
-  })
-  .catch((error: unknown) => {
-    console.error("MongoDB connection error", error);
-  });
+mongoose.connect(conn_string).catch((error: unknown) => {
+  betterErrorLog("> MongoDB connection error: ", error);
+});
 const database = mongoose.connection;
 
 database.once("open", () => {
   console.log("> Connected to database");
 });
 
-database.on("error", console.error.bind(console, "mongo connection error"));
-// ===============[ \MongoDB connection ]=============== //
+database.on("error", console.error.bind(console, "> MongoDB connection error"));
+// ===========================[ \MongoDB connection ]=========================== //
 
-import { addUserOnStartup } from "#utils/helperMethods.js";
-await addUserOnStartup("helvos", "helvos");
+// import { addUserOnStartup } from "#utils/helperMethods.js";
+// await addUserOnStartup("helvos", "helvos");
 
 import authModuleFactory, { AuthModule } from "#middleware/authMiddleware.js";
 const authModule: AuthModule = authModuleFactory();
 
 // =====================[ UNPROTECTED ROUTES ]=====================
 app.post("/login", authModule.login);
-// app.post('/verify-user', authModule.verifyUser);
-// =====================[ \UNPROTECTED ROUTES ]=====================
+// =====================[ \UNPROTECTED ROUTES ]====================
 
 // =====================[ PROTECTED ROUTERS ]======================
 app.use(authModule.authenticateJWT);
+
+import colorsRouter from "./routes/colors.js";
+app.use("/colors", colorsRouter);
+
+import categoriesRouter from "./routes/category.js";
+app.use("/category", categoriesRouter);
+
+import suppliersRouter from "./routes/supplier.js";
+app.use("/supplier", suppliersRouter);
+
+import couriersRouter from "./routes/courier.js";
+app.use("/courier", couriersRouter);
+
+import { betterErrorLog } from "#utils/logMethods.ts";
 
 // =====================[ ERROR HANDLERS ]======================
 import errorHandler from "./controllers/errorControler.js";

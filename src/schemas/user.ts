@@ -22,7 +22,28 @@ const UserSchema = new Schema<UserTypes>(
       type: String,
     },
     permissions: {
-      default: {},
+      default: () => ({
+        category: {
+          add_category: true,
+          edit_category: true,
+          remove_category: true,
+        },
+        color: {
+          add_color: true,
+          edit_color: true,
+          remove_color: true,
+        },
+        courier: {
+          add_courier: true,
+          edit_courier: true,
+          remove_courier: true,
+        },
+        supplier: {
+          add_supplier: true,
+          edit_supplier: true,
+          remove_supplier: true,
+        },
+      }),
       type: Object,
     },
     role: {
@@ -31,10 +52,13 @@ const UserSchema = new Schema<UserTypes>(
       type: String,
     },
     settings: {
-      defaults: {
-        courier: { default: "", type: String },
-        listProductsBy: { default: "category", type: String },
-      },
+      default: () => ({
+        defaults: {
+          courier: "",
+          listProductsBy: "category",
+        },
+      }),
+      type: Object,
     },
     username: {
       required: [true, "Please enter a valid username"],

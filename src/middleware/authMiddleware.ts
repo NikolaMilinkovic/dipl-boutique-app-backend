@@ -50,10 +50,13 @@ export default function () {
     }),
   );
 
+  const authenticateJWT = passport.authenticate("jwt", { session: false });
+
   interface LoginRequestBody {
     password: string;
     username: string;
   }
+
   async function login(req: Request<object, unknown, LoginRequestBody>, res: Response, next: NextFunction) {
     try {
       const { password, username } = req.body;
@@ -87,8 +90,6 @@ export default function () {
     }
   }
 
-  const authenticateJWT = passport.authenticate("jwt", { session: false });
-
   function initializeAuth(app: Application) {
     app.use(passport.initialize());
   }
@@ -105,22 +106,10 @@ export default function () {
     }
   }
 
-  function verifyUser(req: Request, res: Response, next: NextFunction) {
-    try {
-      const { password, token, username } = req.body;
-      // Your verifyUser logic here
-    } catch (error) {
-      betterErrorLog("> Error logging in a user:", error);
-      next(new CustomError("Doslo je do problema prilikom verifikacije korisnika.", 401));
-      return;
-    }
-  }
-
   return {
     authenticateJWT,
     generateToken,
     initializeAuth,
     login,
-    verifyUser,
   };
 }
