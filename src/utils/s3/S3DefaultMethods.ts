@@ -1,104 +1,121 @@
-const { PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
-const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const CustomError = require("../CustomError");
-const dotenv = require('dotenv').config();
-const s3 = require('./S3Client');
-const bucket_name = process.env.BUCKET_NAME;
-const bucket_region = process.env.BUCKET_REGION;
-const crypto = require('crypto');
-const sharp = require('sharp');
-const { betterConsoleLog, betterErrorLog } = require("../logMethods");
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-invalid-void-type */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
-function randomImageName(bytes = 32){
-  return crypto.randomBytes(bytes).toString('hex');
-}
-async function resizeImage(buffer, x = 1080, y = 1920){
-  return await sharp(buffer).resize({width: x, height: y, fit:'contain'}).toBuffer();
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import CustomError from "#utils/CustomError.ts";
+import { betterConsoleLog, betterErrorLog } from "#utils/logMethods.ts";
+import { DeleteObjectCommand, ListBucketsCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import crypto from "crypto";
+import sharp from "sharp";
+
+import s3 from "./S3Client.ts";
+
+const bucketName = process.env.BUCKET_NAME ?? "";
+const bucketRegion = process.env.BUCKET_REGION ?? "";
+
+interface FileType {
+  buffer: Buffer;
+  mimetype: string;
 }
 
-function getCurrentDate(){
-  return new Date().toLocaleDateString("en-UK").replace(/\//g, '-');
-}
-
-async function uploadMediaToS3(file, next) {
+async function deleteMediaFromS3(path: string, imageName: string, next?: (err: Error) => void): Promise<void> {
   try {
-    // const modifiedImageBuffer = await resizeImage(file.buffer, 240, 320);
-    const modifiedImageBuffer = await resizeImage(file.buffer, 480, 640);
-    const imageName = `${randomImageName()}.jpeg`;
     const params = {
-      Bucket: bucket_name,
-      Key: imageName,
-      Body: modifiedImageBuffer,
-      ACL: 'public-read',
-      ContentType: file.mimeType,
-    }
-    const command = new PutObjectCommand(params);
-    const s3_response = await s3.send(command);
-
-    // Construct and return the link for the image
-    if(s3_response.$metadata.httpStatusCode === 200){
-      const response = {
-        uri: `https://${bucket_name}.s3.${process.env.BUCKET_REGION}.amazonaws.com/${imageName}`,
-        imageName: imageName
-      }
-      return response;
-    } else {
-      return next(new CustomError('Došlo je do problema prilikom uploadovanja slike', s3_response.$metadata.httpStatusCode));
-    }
-  } catch (error) {
-    const statusCode = error.statusCode || 500;
-    betterErrorLog('> Error uploading media to the s3 bucket:', error);
-    return next(new CustomError('Došlo je do problema prilikom uploadovanja slike', statusCode));
-  }
-}
-
-async function deleteMediaFromS3(imageName){
-  try{
-    const params = {
-      Bucket: bucket_name,
-      Key: imageName
-    }
+      Bucket: bucketName,
+      Key: `${path}${imageName}`,
+    };
     const command = new DeleteObjectCommand(params);
     const result = await s3.send(command);
-    if(result.$metadata.httpStatusCode !== 204){
-      betterConsoleLog('> Error while deleting the image from the S3 bucket', result);
-    }
 
-  } catch (error){
-    const statusCode = error.statusCode || 500;
-    betterErrorLog('> Error deleting media from the s3 bucket:', error);
-    return next(new CustomError('Došlo je do problema prilikom brisanja slike', statusCode));
+    if (result.$metadata.httpStatusCode !== 204) {
+      betterConsoleLog("> Error while deleting the image from the S3 bucket", result);
+    }
+  } catch (error: any) {
+    const statusCode = error.statusCode ?? 500;
+    betterErrorLog("> Error deleting media from the s3 bucket:", error);
+    if (next) {
+      next(new CustomError("Došlo je do problema prilikom brisanja slike", statusCode));
+      return;
+    }
   }
 }
 
-async function uploadFileToS3(file, next) {
-  try{
+function getCurrentDate(): string {
+  return new Date().toLocaleDateString("en-UK").replace(/\//g, "-");
+}
+
+function randomImageName(bytes = 32): string {
+  return crypto.randomBytes(bytes).toString("hex");
+}
+
+function resizeImage(buffer: Buffer, x = 1080, y = 1920): Promise<Buffer> {
+  return sharp(buffer).resize({ fit: "contain", height: y, width: x }).toBuffer();
+}
+
+async function uploadFileToS3(path: string, file: FileType, next: (err: Error) => void): Promise<void | { fileName: string; uri: string }> {
+  try {
     const fileName = `orders-for-${getCurrentDate()}.xlsx`;
     const params = {
-      Bucket: bucket_name,
-      Key: fileName,
+      ACL: "public-read" as const,
       Body: file.buffer,
-      ACL: 'public-read',
-      ContentType: file.mimeType,
+      Bucket: bucketName,
+      ContentType: file.mimetype,
+      Key: `${path}${fileName}`,
     };
-    const command = new PutObjectCommand(params);
-    const s3_response = await s3.send(command);
 
-    if (s3_response.$metadata.httpStatusCode === 200) {
-      const response = {
-        uri: `https://${bucket_name}.s3.${process.env.BUCKET_REGION}.amazonaws.com/${fileName}`,
-        fileName: fileName
+    const command = new PutObjectCommand(params);
+    const s3Response = await s3.send(command);
+
+    if ((s3Response.$metadata.httpStatusCode ?? 500) === 200) {
+      return {
+        fileName,
+        uri: `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/${path}${fileName}`,
       };
-      return response;
     } else {
-      return next(new CustomError('There was a problem uploading the Excel file', s3_response.$metadata.httpStatusCode));
+      next(new CustomError("There was a problem uploading the Excel file", s3Response.$metadata.httpStatusCode ?? 500));
+      return;
     }
-    
-  } catch(error) {
-    const statusCode = error.statusCode || 500;
-    betterErrorLog('> Error uploading file to the s3 bucket:', error);
-    return next(new CustomError('Došlo je do problema prilikom uploadovanja fajla', statusCode));
+  } catch (error: any) {
+    const statusCode = error.statusCode ?? 500;
+    betterErrorLog("> Error uploading file to the s3 bucket:", error);
+    next(new CustomError("Došlo je do problema prilikom uploadovanja fajla", statusCode));
+    return;
   }
 }
 
-module.exports = { uploadMediaToS3, deleteMediaFromS3, uploadFileToS3 };
+async function uploadMediaToS3(path: string, file: FileType, next: (err: Error) => void): Promise<void | { imageName: string; uri: string }> {
+  try {
+    const modifiedImageBuffer = await resizeImage(file.buffer, 480, 640);
+    const imageName = `${randomImageName()}.jpeg`;
+
+    const params = {
+      ACL: "public-read" as const,
+      Body: modifiedImageBuffer,
+      Bucket: bucketName,
+      ContentType: file.mimetype,
+      Key: `${path}${imageName}`,
+    };
+
+    const command = new PutObjectCommand(params);
+    const s3Response = await s3.send(command);
+
+    if ((s3Response.$metadata.httpStatusCode ?? 0) === 200) {
+      return {
+        imageName,
+        uri: `https://${bucketName}.s3.${bucketRegion}.amazonaws.com/${path}${imageName}`,
+      };
+    } else {
+      next(new CustomError("Došlo je do problema prilikom uploadovanja slike", s3Response.$metadata.httpStatusCode ?? 500));
+      return;
+    }
+  } catch (error: any) {
+    const statusCode = error.statusCode ?? 500;
+    betterErrorLog("> Error uploading media to the s3 bucket:", error);
+    next(new CustomError("Došlo je do problema prilikom uploadovanja slike", statusCode));
+    return;
+  }
+}
+
+export { deleteMediaFromS3, uploadFileToS3, uploadMediaToS3 };

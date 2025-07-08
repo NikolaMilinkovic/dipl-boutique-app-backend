@@ -1,6 +1,7 @@
 // /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-// import express from "express";
-// import multer from "multer";
+import { addProduct, getProducts } from "#controllers/productControler.ts";
+import express from "express";
+import multer from "multer";
 
 // import {
 //   addDress,
@@ -16,8 +17,11 @@
 //   updateProduct,
 // } from "./yourControllerFile";
 
-// const router = express.Router();
-// const upload = multer({ storage: multer.memoryStorage() });
+const router = express.Router();
+const upload = multer({ storage: multer.memoryStorage() });
+
+router.route("/add").post(upload.single("image"), addProduct);
+router.route("/get-all-products").get(getProducts);
 
 // router.route("/delete-item-batch").delete(removeProductBatch);
 
@@ -39,4 +43,4 @@
 // router.route("/inactive-purses").get(getAllInactivePurses);
 // // =======================[ \PURSES ]=======================
 
-// export default router;
+export default router;

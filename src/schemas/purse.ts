@@ -32,7 +32,7 @@ const PurseSchema = new Schema<PurseDocument>(
     category: { required: [true, "Category is required"], type: String },
     colors: [{ ref: "PurseColor", type: Schema.Types.ObjectId }],
     description: { required: false, type: String },
-    displayPriority: { required: [true, "Display Priority indicator is required"], type: Number },
+    // displayPriority: { required: [true, "Display Priority indicator is required"], type: Number },
     image: { required: true, type: ImageSchema },
     name: { required: [true, "Item name is required"], type: String },
     price: { required: [true, "Price is required"], type: Number },

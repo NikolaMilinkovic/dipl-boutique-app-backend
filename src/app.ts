@@ -9,7 +9,6 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 
 dotenv.config();
-
 const app = express();
 
 app.use(cors());
@@ -68,6 +67,9 @@ app.use("/supplier", suppliersRouter);
 
 import couriersRouter from "./routes/courier.js";
 app.use("/courier", couriersRouter);
+
+import productsRouter from "./routes/products.ts";
+app.use("/product", productsRouter);
 
 import { betterErrorLog } from "#utils/logMethods.ts";
 

@@ -1,5 +1,4 @@
 import http from "http";
-import { authenticate } from "passport";
 import { Server, Socket } from "socket.io";
 
 let io: null | Server = null;

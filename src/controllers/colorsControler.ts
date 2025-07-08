@@ -82,7 +82,7 @@ export const deleteColor = async (req: Request, res: Response, next: NextFunctio
     io.emit("colorRemoved", deletedColor._id);
 
     res.status(200).json({ color: deletedColor, message: `${deletedColor.name} boja je uspešno obrisana` });
-  } catch (error) {
+  } catch (error: unknown) {
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error deleting a color:", error);
     next(new CustomError("Došlo je do problema prilikom brisanja boje", statusCode));

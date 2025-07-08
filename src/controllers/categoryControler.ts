@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import { CategoryTypes } from "#global/types.ts";
 import Category from "#schemas/category.ts";
 import { getIO } from "#socket/initSocket.ts";
 import CustomError from "#utils/CustomError.ts";
@@ -14,7 +13,7 @@ export const getCategories = async (req: Request, res: Response, next: NextFunct
   try {
     const categories = await Category.find();
     res.status(200).json(categories);
-  } catch (error) {
+  } catch (error: unknown) {
     betterErrorLog("> Error while fetching categories:", error);
     next(new CustomError("Došlo je do problema prilikom preuzimanja kategorija", 500));
     return;
@@ -46,7 +45,7 @@ export const addCategory = async (req: Request, res: Response, next: NextFunctio
       next(new CustomError(`Kategorija ${error?.keyValue?.name} već postoji`, 409));
       return;
     }
-    const statusCode = error.statusCode ?? 500;
+    const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error while adding a new category:", error);
     next(new CustomError("Došlo je do problema prilikom dodavanja kategorije", statusCode));
     return;
@@ -69,8 +68,8 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
     io.emit("categoryRemoved", deletedCategory._id);
 
     res.status(200).json({ color: deletedCategory, message: `Kategorija ${deletedCategory.name} je uspešno obrisana` });
-  } catch (error) {
-    const statusCode = error.statusCode || 500;
+  } catch (error: unknown) {
+    const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error while deleting a category:", error);
     next(new CustomError("Došlo je do problema prilikom brisanja kategorije", statusCode));
     return;
