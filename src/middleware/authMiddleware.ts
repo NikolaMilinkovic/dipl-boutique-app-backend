@@ -3,7 +3,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 import bcrypt from "bcryptjs";
-import dotenv from "dotenv";
 import { Application, NextFunction, Request, RequestHandler, Response } from "express";
 import jwt from "jsonwebtoken";
 import passport from "passport";
@@ -13,7 +12,12 @@ import User, { UserTypes } from "../schemas/user.js";
 import CustomError from "../utils/CustomError.js";
 import { betterConsoleLog, betterErrorLog } from "../utils/logMethods.js";
 
-dotenv.config();
+// import dotenv from "dotenv";
+// dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+  const dotenv = await import("dotenv");
+  dotenv.config();
+}
 
 export interface AuthModule {
   authenticateJWT: RequestHandler;

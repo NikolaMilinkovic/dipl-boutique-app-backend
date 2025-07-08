@@ -1,6 +1,5 @@
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
 import logger from "morgan";
@@ -8,7 +7,12 @@ import path from "path";
 import { dirname } from "path";
 import { fileURLToPath } from "url";
 
-dotenv.config();
+// import dotenv from "dotenv";
+// dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+  const dotenv = await import("dotenv");
+  dotenv.config();
+}
 const app = express();
 
 app.use(cors());

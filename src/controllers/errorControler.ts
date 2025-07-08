@@ -1,10 +1,14 @@
-import dotenv from "dotenv";
 import { NextFunction, Request, Response } from "express";
 
 import CustomError from "../utils/CustomError.js";
 import { betterErrorLog } from "../utils/logMethods.js";
 
-dotenv.config();
+// import dotenv from "dotenv";
+// dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+  const dotenv = await import("dotenv");
+  dotenv.config();
+}
 
 const devErrors = (res: Response, err: CustomError) => {
   betterErrorLog(err.message, err);
