@@ -3,11 +3,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import Courier from "#schemas/courier.js";
-import { getIO } from "#socket/initSocket.js";
-import CustomError from "#utils/CustomError.js";
-import { betterErrorLog } from "#utils/logMethods.js";
 import { NextFunction, Request, Response } from "express";
+
+import Courier from "../schemas/courier.js";
+import { getIO } from "../socket/initSocket.js";
+import CustomError from "../utils/CustomError.js";
+import { betterErrorLog } from "../utils/logMethods.js";
 
 // GET ALL COURIERS
 export const getCouriers = async (req: Request, res: Response, next: NextFunction) => {

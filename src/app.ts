@@ -47,7 +47,7 @@ database.once("open", () => {
 database.on("error", console.error.bind(console, "> MongoDB connection error"));
 // ===========================[ \MongoDB connection ]=========================== //
 
-// import { addUserOnStartup } from "#utils/helperMethods.js";
+// import { addUserOnStartup } from "../utils/helperMethods.js";
 // await addUserOnStartup("helvos", "helvos");
 
 import authModuleFactory, { AuthModule } from "./middleware/authMiddleware.js";

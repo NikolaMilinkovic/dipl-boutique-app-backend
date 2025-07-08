@@ -1,4 +1,4 @@
-import { addCourier, deleteCourier, getCouriers, updateCourier } from "#controllers/couriersControler.js";
+import { addCourier, deleteCourier, getCouriers, updateCourier } from "../controllers/couriersControler.js";
 import express from "express";
 
 const router = express.Router();

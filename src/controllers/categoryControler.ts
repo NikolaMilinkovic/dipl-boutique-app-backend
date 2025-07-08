@@ -3,11 +3,12 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import Category from "#schemas/category.js";
-import { getIO } from "#socket/initSocket.js";
-import CustomError from "#utils/CustomError.js";
-import { betterErrorLog } from "#utils/logMethods.js";
 import { NextFunction, Request, Response } from "express";
+
+import Category from "../schemas/category.js";
+import { getIO } from "../socket/initSocket.js";
+import CustomError from "../utils/CustomError.js";
+import { betterErrorLog } from "../utils/logMethods.js";
 
 // GET
 export const getCategories = async (req: Request, res: Response, next: NextFunction) => {

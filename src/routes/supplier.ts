@@ -1,5 +1,6 @@
-import { addSupplier, deleteSupplier, getSuppliers, updateSupplier } from "#controllers/supplierControler.js";
 import express from "express";
+
+import { addSupplier, deleteSupplier, getSuppliers, updateSupplier } from "../controllers/supplierControler.js";
 
 const router = express.Router();
 

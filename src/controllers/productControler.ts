@@ -2,14 +2,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { ImageTypes, NewProductTypes, ProductColorTypes } from "#global/types.js";
-import DressModel from "#schemas/dress.js";
-import PurseModel from "#schemas/purse.js";
-import PurseColorModel from "#schemas/purseColor.js";
-import { getIO } from "#socket/initSocket.js";
-import CustomError from "#utils/CustomError.js";
-import { uploadMediaToS3 } from "#utils/s3/S3DefaultMethods.js";
 import { NextFunction, Request, Response } from "express";
+
+import { ImageTypes, NewProductTypes, ProductColorTypes } from "../global/types.js";
+import DressModel from "../schemas/dress.js";
+import PurseModel from "../schemas/purse.js";
+import PurseColorModel from "../schemas/purseColor.js";
+import { getIO } from "../socket/initSocket.js";
+import CustomError from "../utils/CustomError.js";
+import { uploadMediaToS3 } from "../utils/s3/S3DefaultMethods.js";
 
 interface AddProductRequestBody {
   product: string;
