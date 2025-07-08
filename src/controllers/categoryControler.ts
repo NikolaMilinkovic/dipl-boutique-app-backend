@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -40,7 +41,8 @@ export const addCategory = async (req: Request, res: Response, next: NextFunctio
     io.emit("categoryAdded", newCategory);
 
     res.status(200).json({ category: newCategory, message: `Kategorija ${name} je uspešno dodata` });
-  } catch (error: unknown) {
+  } catch (err) {
+    const error = err as any;
     if (error.code === 11000) {
       next(new CustomError(`Kategorija ${error?.keyValue?.name} već postoji`, 409));
       return;
@@ -68,7 +70,8 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
     io.emit("categoryRemoved", deletedCategory._id);
 
     res.status(200).json({ color: deletedCategory, message: `Kategorija ${deletedCategory.name} je uspešno obrisana` });
-  } catch (error: unknown) {
+  } catch (err) {
+    const error = err as any;
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error while deleting a category:", error);
     next(new CustomError("Došlo je do problema prilikom brisanja kategorije", statusCode));

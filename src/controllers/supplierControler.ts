@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -36,12 +37,13 @@ export const addSupplier = async (req: Request, res: Response, next: NextFunctio
     io.emit("supplierAdded", newSupplier);
 
     res.status(200).json({ message: `${newSupplier.name} je uspešno dodat `, supplier: newSupplier });
-  } catch (error) {
+  } catch (err) {
+    const error = err as any;
     if (error.code === 11000) {
       next(new CustomError(`${error.keyValue.name} već postoji`, 409));
       return;
     }
-    const statusCode = error.statusCode || 500;
+    const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error adding a new supplier:", error);
     next(new CustomError("Doslo je do problema prilikom dodavanja dobavljača", statusCode));
     return;
@@ -63,8 +65,9 @@ export const updateSupplier = async (req: Request, res: Response, next: NextFunc
       message: `Dobavljač uspešno sačuvan kao ${name}`,
       supplier: updatedSupplier,
     });
-  } catch (error) {
-    const statusCode = error.statusCode || 500;
+  } catch (err) {
+    const error = err as any;
+    const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error updating a supplier:", error);
     next(new CustomError("Doslo je do problema prilikom promene dobavljača", statusCode));
     return;
@@ -87,7 +90,8 @@ export const deleteSupplier = async (req: Request, res: Response, next: NextFunc
     io.emit("supplierRemoved", deletedSupplier._id);
 
     res.status(200).json({ message: `Dobavljač ${deletedSupplier.name} je uspešno obrisan`, supplier: deletedSupplier });
-  } catch (error) {
+  } catch (err) {
+    const error = err as any;
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error deleting a supplier:", error);
     next(new CustomError("Doslo je do problema prilikom brisanja dobavljača", statusCode));

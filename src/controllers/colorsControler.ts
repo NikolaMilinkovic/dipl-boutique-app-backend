@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
@@ -82,7 +84,8 @@ export const deleteColor = async (req: Request, res: Response, next: NextFunctio
     io.emit("colorRemoved", deletedColor._id);
 
     res.status(200).json({ color: deletedColor, message: `${deletedColor.name} boja je uspešno obrisana` });
-  } catch (error: unknown) {
+  } catch (err) {
+    const error = err as any;
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error deleting a color:", error);
     next(new CustomError("Došlo je do problema prilikom brisanja boje", statusCode));
@@ -110,7 +113,8 @@ export const updateColor = async (req: Request, res: Response, next: NextFunctio
       color: updatedColor,
       message: `Boja uspešno sačuvana kao ${name}`,
     });
-  } catch (error: unknown) {
+  } catch (err) {
+    const error = err as any;
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error updating a color:", error);
     next(new CustomError("Došlo je do problema prilikom promene boje", statusCode));

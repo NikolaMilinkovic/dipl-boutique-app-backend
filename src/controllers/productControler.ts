@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { ImageTypes, NewProductTypes, ProductColorTypes } from "#global/types.js";
@@ -15,7 +17,6 @@ interface AddProductRequestBody {
 
 export const getProducts = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    console.log("> Getting all products...");
     const [activePurses, activeDresses, inactivePurses, inactiveDresses] = await Promise.all([
       PurseModel.find({ active: true }).populate("colors").sort({ createdAt: -1 }),
       DressModel.find({ active: true }).populate("colors").sort({ createdAt: -1 }),
@@ -31,19 +32,22 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
       allProducts: [...activeProducts, ...inactiveProducts],
       inactiveProducts,
     });
-  } catch (error: unknown) {
+  } catch (err) {
+    const error = err as any;
     const statusCode = error?.statusCode ?? 500;
     next(new CustomError("Doslo je do problema prilikom preuzimanja proizvoda", statusCode as number));
   }
 };
 
-export const addProduct = async (req: Request<unknown, unknown, AddProductRequestBody>, res: Response, next: NextFunction) => {
+export const addProduct = async (req: Request<unknown, unknown, AddProductRequestBody>, res: Response, next: NextFunction): Promise<void> => {
   try {
     if (!req.body.product) {
-      return res.status(404).json({ message: "Product data not found, please try again" });
+      res.status(404).json({ message: "Product data not found, please try again" });
+      return;
     }
     if (!req.file) {
-      return res.status(404).json({ message: "Product image not found, please try again" });
+      res.status(404).json({ message: "Product image not found, please try again" });
+      return;
     }
     const product = JSON.parse(req.body.product) as NewProductTypes;
     const file: Express.Multer.File = req.file;
@@ -56,7 +60,8 @@ export const addProduct = async (req: Request<unknown, unknown, AddProductReques
     // Save image to S3 -> imageName, uri
     const image = await uploadMediaToS3("images/products/", file, next);
     if (!image) {
-      return res.status(500).json({ message: "There was an error while adding image to AWS storage" });
+      res.status(500).json({ message: "There was an error while adding image to AWS storage" });
+      return;
     }
 
     // PURSE
@@ -71,13 +76,14 @@ export const addProduct = async (req: Request<unknown, unknown, AddProductReques
       // call socket to update products to all user
     }
     res.status(200).json({ message: `Proizvod ${product.name} je uspešno dodat.` });
-  } catch (error: unknown) {
+  } catch (err) {
+    const error = err as any;
     const statusCode = error?.statusCode ?? 500;
     next(new CustomError("Doslo je do problema prilikom dodavanja proizvoda", statusCode as number));
   }
 };
 
-async function addDress() {}
+// async function addDress() {}
 async function addPurse(product: NewProductTypes, colorsArray: ProductColorTypes[], image: ImageTypes, next: NextFunction) {
   const insertedColors = await PurseColorModel.insertMany(colorsArray);
   const colorIds = insertedColors.map((color) => color._id);

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -35,7 +36,8 @@ export const addCourier = async (req: Request, res: Response, next: NextFunction
     io.emit("courierAdded", newCourier);
 
     res.status(200).json({ courier: newCourier, message: `Kurir ${name} je uspešno dodat` });
-  } catch (error) {
+  } catch (err) {
+    const error = err as any;
     if (error.code === 11000) {
       next(new CustomError(`Kurir ${error.keyValue.name} već postoji`, 409));
       return;
@@ -65,7 +67,8 @@ export const updateCourier = async (req: Request, res: Response, next: NextFunct
       courier: updatedCourier,
       message: `Kurir ${name} uspešno sačuvan`,
     });
-  } catch (error) {
+  } catch (err) {
+    const error = err as any;
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error updating a courier:", error);
     next(new CustomError("Do[lo je do problema prilikom promene kurira", statusCode));
@@ -89,7 +92,8 @@ export const deleteCourier = async (req: Request, res: Response, next: NextFunct
     io.emit("courierRemoved", deleterCourier._id);
 
     res.status(200).json({ courier: deleterCourier, message: `Kurir ${deleterCourier.name} je uspešno obrisan` });
-  } catch (error) {
+  } catch (err) {
+    const error = err as any;
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error deleting a courier:", error);
     next(new CustomError("Došlo je do problema prilikom brisanja kurira", statusCode));

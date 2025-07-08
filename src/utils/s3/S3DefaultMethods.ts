@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import CustomError from "#utils/CustomError.js";
 import { betterConsoleLog, betterErrorLog } from "#utils/logMethods.js";
-import { DeleteObjectCommand, ListBucketsCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import sharp from "sharp";
 
