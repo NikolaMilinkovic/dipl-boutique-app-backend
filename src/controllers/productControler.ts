@@ -2,6 +2,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import DressColorModel from "#schemas/dressColor.js";
+import { betterErrorLog } from "#utils/logMethods.js";
 import { NextFunction, Request, Response } from "express";
 
 import { ImageTypes, NewProductTypes, ProductColorTypes } from "../global/types.js";
@@ -72,19 +74,47 @@ export const addProduct = async (req: Request<unknown, unknown, AddProductReques
 
     // DRESS
     if (product.stockType === "Boja-Veličina-Količina") {
-      // Create color objects -> _id
-      // create new product
-      // call socket to update products to all user
+      await addDress(product, colorsArray, image, next);
     }
     res.status(200).json({ message: `Proizvod ${product.name} je uspešno dodat.` });
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
+    betterErrorLog(`> Error adding a new product: `, err);
     next(new CustomError("Doslo je do problema prilikom dodavanja proizvoda", statusCode as number));
   }
 };
 
-// async function addDress() {}
+async function addDress(product: NewProductTypes, colorsArray: ProductColorTypes[], image: ImageTypes, next: NextFunction) {
+  const insertedColors = await DressColorModel.insertMany(colorsArray);
+  const colorIds = insertedColors.map((color) => color._id);
+
+  let totalStock = 0;
+  for (const color of insertedColors) {
+    for (const sizeObj of color.sizes) {
+      totalStock += sizeObj.stock;
+    }
+  }
+
+  const newDress = new DressModel({
+    category: product.category,
+    colors: colorIds,
+    description: product.description,
+    image,
+    name: product.name,
+    price: product.price,
+    stockType: product.stockType,
+    supplier: product.supplier,
+    totalStock,
+  });
+
+  const result = await newDress.save();
+  const populatedDress = await DressModel.findById(result._id).populate("colors");
+
+  const io = getIO();
+  io.emit("productAdded", populatedDress);
+}
+
 async function addPurse(product: NewProductTypes, colorsArray: ProductColorTypes[], image: ImageTypes, next: NextFunction) {
   const insertedColors = await PurseColorModel.insertMany(colorsArray);
   const colorIds = insertedColors.map((color) => color._id);
