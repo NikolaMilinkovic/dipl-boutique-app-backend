@@ -1,25 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import {
-  ColorSizeTypes,
-  ImageTypes,
-  NewColorObjectTypes,
-  NewProductTypes,
-  NewPurseColorTypes,
-  ProductColorTypes,
-  PurseColorTypes,
-  PurseTypes,
-} from "#global/types.ts";
-import color from "#schemas/color.ts";
-import DressModel from "#schemas/dress.ts";
-import PurseModel from "#schemas/purse.ts";
-import PurseColorModel from "#schemas/purseColor.ts";
-import { getIO } from "#socket/initSocket.ts";
-import CustomError from "#utils/CustomError.ts";
-import { betterConsoleLog, betterErrorLog } from "#utils/logMethods.ts";
-import { uploadFileToS3, uploadMediaToS3 } from "#utils/s3/S3DefaultMethods.ts";
+import { ImageTypes, NewProductTypes, ProductColorTypes } from "#global/types.js";
+import DressModel from "#schemas/dress.js";
+import PurseModel from "#schemas/purse.js";
+import PurseColorModel from "#schemas/purseColor.js";
+import { getIO } from "#socket/initSocket.js";
+import CustomError from "#utils/CustomError.js";
+import { uploadMediaToS3 } from "#utils/s3/S3DefaultMethods.js";
 import { NextFunction, Request, Response } from "express";
-import { RequestOptions } from "https";
 
 interface AddProductRequestBody {
   product: string;

@@ -6,7 +6,7 @@ import CustomError from "#utils/CustomError.js";
 import { betterErrorLog } from "#utils/logMethods.js";
 import { NextFunction, Request, Response } from "express";
 
-import { getIO } from "../socket/initSocket.ts";
+import { getIO } from "../socket/initSocket.js";
 
 // GET ALL COLORS
 export const getColors = async (req: Request, res: Response, next: NextFunction) => {

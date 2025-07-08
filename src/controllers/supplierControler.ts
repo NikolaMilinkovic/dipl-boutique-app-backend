@@ -3,10 +3,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import Supplier from "#schemas/supplier.ts";
-import { getIO } from "#socket/initSocket.ts";
-import CustomError from "#utils/CustomError.ts";
-import { betterErrorLog } from "#utils/logMethods.ts";
+import Supplier from "#schemas/supplier.js";
+import { getIO } from "#socket/initSocket.js";
+import CustomError from "#utils/CustomError.js";
+import { betterErrorLog } from "#utils/logMethods.js";
 import { NextFunction, Request, Response } from "express";
 
 // GET ALL SUPPLIERS

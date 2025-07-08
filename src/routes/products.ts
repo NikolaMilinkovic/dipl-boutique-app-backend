@@ -1,5 +1,5 @@
 // /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { addProduct, getProducts } from "#controllers/productControler.ts";
+import { addProduct, getProducts } from "#controllers/productControler.js";
 import express from "express";
 import multer from "multer";
 

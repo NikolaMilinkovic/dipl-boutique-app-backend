@@ -2,10 +2,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
-import Category from "#schemas/category.ts";
-import { getIO } from "#socket/initSocket.ts";
-import CustomError from "#utils/CustomError.ts";
-import { betterErrorLog } from "#utils/logMethods.ts";
+import Category from "#schemas/category.js";
+import { getIO } from "#socket/initSocket.js";
+import CustomError from "#utils/CustomError.js";
+import { betterErrorLog } from "#utils/logMethods.js";
 import { NextFunction, Request, Response } from "express";
 
 // GET

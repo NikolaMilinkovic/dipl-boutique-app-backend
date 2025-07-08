@@ -4,13 +4,13 @@
 
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import CustomError from "#utils/CustomError.ts";
-import { betterConsoleLog, betterErrorLog } from "#utils/logMethods.ts";
+import CustomError from "#utils/CustomError.js";
+import { betterConsoleLog, betterErrorLog } from "#utils/logMethods.js";
 import { DeleteObjectCommand, ListBucketsCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import crypto from "crypto";
 import sharp from "sharp";
 
-import s3 from "./S3Client.ts";
+import s3 from "./S3Client.js";
 
 const bucketName = process.env.BUCKET_NAME ?? "";
 const bucketRegion = process.env.BUCKET_REGION ?? "";

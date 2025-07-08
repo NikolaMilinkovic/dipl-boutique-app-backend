@@ -68,10 +68,10 @@ app.use("/supplier", suppliersRouter);
 import couriersRouter from "./routes/courier.js";
 app.use("/courier", couriersRouter);
 
-import productsRouter from "./routes/products.ts";
+import productsRouter from "./routes/products.js";
 app.use("/product", productsRouter);
 
-import { betterErrorLog } from "#utils/logMethods.ts";
+import { betterErrorLog } from "#utils/logMethods.js";
 
 // =====================[ ERROR HANDLERS ]======================
 import errorHandler from "./controllers/errorControler.js";

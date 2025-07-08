@@ -1,5 +1,4 @@
-import { addSupplier, deleteSupplier, getSuppliers, updateSupplier } from "#controllers/supplierControler.ts";
-import express from "express";
+import { addSupplier, deleteSupplier, getSuppliers, updateSupplier } from "#controllers/supplierControler.tj
 
 const router = express.Router();
 
