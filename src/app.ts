@@ -50,7 +50,7 @@ database.on("error", console.error.bind(console, "> MongoDB connection error"));
 // import { addUserOnStartup } from "#utils/helperMethods.js";
 // await addUserOnStartup("helvos", "helvos");
 
-import authModuleFactory, { AuthModule } from "#middleware/authMiddleware.js";
+import authModuleFactory, { AuthModule } from "./middleware/authMiddleware.js";
 const authModule: AuthModule = authModuleFactory();
 
 // =====================[ UNPROTECTED ROUTES ]=====================
@@ -75,10 +75,9 @@ app.use("/courier", couriersRouter);
 import productsRouter from "./routes/products.js";
 app.use("/product", productsRouter);
 
-import { betterErrorLog } from "#utils/logMethods.js";
-
 // =====================[ ERROR HANDLERS ]======================
 import errorHandler from "./controllers/errorControler.js";
+import { betterErrorLog } from "./utils/logMethods.js";
 app.use(errorHandler);
 // =====================[ \ERROR HANDLERS ]=====================
 
