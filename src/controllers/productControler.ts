@@ -11,8 +11,8 @@ import PurseModel from "../schemas/purse.js";
 import PurseColorModel from "../schemas/purseColor.js";
 import { getIO } from "../socket/initSocket.js";
 import CustomError from "../utils/CustomError.js";
-import { betterErrorLog } from "../utils/logMethods.js";
-import { uploadMediaToS3 } from "../utils/s3/S3DefaultMethods.js";
+import { betterConsoleLog, betterErrorLog } from "../utils/logMethods.js";
+import { deleteMediaFromS3, uploadMediaToS3 } from "../utils/s3/S3DefaultMethods.js";
 
 interface AddProductRequestBody {
   product: string;
@@ -76,7 +76,7 @@ export const addProduct = async (req: Request<unknown, unknown, AddProductReques
     if (product.stockType === "Boja-Veličina-Količina") {
       await addDress(product, colorsArray, image, next);
     }
-    res.status(200).json({ message: `Proizvod ${product.name} je uspešno dodat.` });
+    res.status(200).json({ message: `Proizvod ${product.name} je uspešno dodat` });
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
@@ -137,4 +137,62 @@ async function addPurse(product: NewProductTypes, colorsArray: ProductColorTypes
 
   const io = getIO();
   io.emit("productAdded", populatedPurse);
+}
+
+export const deleteProduct = async (req: Request, res: Response, next: NextFunction) => {
+  interface DeletePurseBody {
+    colorIds: string[];
+    id: string;
+    stockType: string;
+  }
+  try {
+    const { colorIds, id, stockType } = req.body as DeletePurseBody;
+
+    if (!id || !Array.isArray(colorIds)) {
+      next(new CustomError("Invalid input data", 400));
+      return;
+    }
+
+    // PURSE
+    if (stockType === "Boja-Količina") {
+      await deletePurse(id, colorIds, next);
+    }
+
+    // DRESS
+    if (stockType === "Boja-Veličina-Količina") {
+      await deleteDress(id, colorIds, next);
+    }
+
+    // SOCKET HANDLING
+    const io = getIO();
+    // updateLastUpdatedField('colorLastUpdatedAt', io);
+    io.emit("productRemoved", id);
+    res.status(200).json({ message: `Proizvod je uspešno obrisan` });
+  } catch (err) {
+    const error = err as any;
+    const statusCode = error?.statusCode ?? 500;
+    next(new CustomError("Doslo je do problema prilikom brisanja proizvoda", statusCode as number));
+  }
+};
+
+async function deleteDress(id: string, colorIds: string[], next: NextFunction) {
+  await Promise.all(colorIds.map((colorId) => DressColorModel.findByIdAndDelete(colorId)));
+  const dress = await DressModel.findById(id);
+  if (!dress) {
+    throw new Error("Dress not found");
+  }
+  const imageName = dress.image.imageName;
+  await deleteMediaFromS3("images/products/", imageName, next);
+  await DressModel.findByIdAndDelete(id);
+}
+
+async function deletePurse(id: string, colorIds: string[], next: NextFunction) {
+  await Promise.all(colorIds.map((colorId) => PurseColorModel.findByIdAndDelete(colorId)));
+  const purse = await PurseModel.findById(id);
+  if (!purse) {
+    throw new Error("Purse not found");
+  }
+  const imageName = purse.image.imageName;
+  await deleteMediaFromS3("images/products/", imageName, next);
+  await PurseModel.findByIdAndDelete(id);
 }

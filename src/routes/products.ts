@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 
 // /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { addProduct, getProducts } from "../controllers/productControler.js";
+import { addProduct, deleteProduct, getProducts } from "../controllers/productControler.js";
 
 // import {
 //   addDress,
@@ -23,6 +23,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 router.route("/add").post(upload.single("image"), addProduct);
 router.route("/get-all-products").get(getProducts);
+router.route("/delete").delete(deleteProduct);
 
 // router.route("/delete-item-batch").delete(removeProductBatch);
 
