@@ -24,7 +24,6 @@ export interface DressTypes {
   category: string;
   colors: DressColorTypes[];
   description: string;
-  displayPriority: number;
   image: ImageTypes;
   name: string;
   price: number;
@@ -50,7 +49,6 @@ export interface NewProductTypes {
   category: string;
   colors: NewColorObjectTypes;
   description: string;
-  displayPriority: number;
   image: File | null;
   name: string;
   price: number;
@@ -86,7 +84,6 @@ export interface PurseTypes {
   category: string;
   colors: PurseColorTypes[];
   description: string;
-  displayPriority: number;
   image: ImageTypes;
   name: string;
   price: number;

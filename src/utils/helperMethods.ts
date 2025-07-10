@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import bcrypt from "bcryptjs";
 
 import User from "../schemas/user.js";
@@ -29,4 +30,20 @@ export async function addUserOnStartup(username: string, plainPassword: string):
   } catch (error: unknown) {
     betterErrorLog("> Error creating a user:", error);
   }
+}
+export function compareAndUpdate(oldValue: unknown, newValue: unknown) {
+  if (typeof oldValue === "object" && typeof newValue === "object") {
+    if (!deepEqual(oldValue!, newValue!)) {
+      return newValue;
+    }
+    return oldValue;
+  }
+  if (oldValue !== newValue) {
+    return newValue;
+  }
+  return oldValue;
+}
+
+function deepEqual(obj1: object, obj2: object) {
+  return JSON.stringify(obj1) === JSON.stringify(obj2);
 }

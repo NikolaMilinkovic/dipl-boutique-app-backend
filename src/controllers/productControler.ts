@@ -1,16 +1,21 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { Type } from "@aws-sdk/client-s3";
 import { NextFunction, Request, Response } from "express";
+import { ObjectId, Types } from "mongoose";
 
-import { ImageTypes, NewProductTypes, ProductColorTypes } from "../global/types.js";
+import { DressColorTypes, ImageTypes, NewProductTypes, ProductColorTypes, ProductTypes, PurseColorTypes } from "../global/types.js";
 import DressModel from "../schemas/dress.js";
 import DressColorModel from "../schemas/dressColor.js";
 import PurseModel from "../schemas/purse.js";
 import PurseColorModel from "../schemas/purseColor.js";
 import { getIO } from "../socket/initSocket.js";
 import CustomError from "../utils/CustomError.js";
+import { compareAndUpdate } from "../utils/helperMethods.js";
 import { betterConsoleLog, betterErrorLog } from "../utils/logMethods.js";
 import { deleteMediaFromS3, uploadMediaToS3 } from "../utils/s3/S3DefaultMethods.js";
 
@@ -38,7 +43,7 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
-    next(new CustomError("Doslo je do problema prilikom preuzimanja proizvoda", statusCode as number));
+    next(new CustomError("Došlo je do problema prilikom preuzimanja proizvoda", statusCode as number));
   }
 };
 
@@ -81,7 +86,7 @@ export const addProduct = async (req: Request<unknown, unknown, AddProductReques
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog(`> Error adding a new product: `, err);
-    next(new CustomError("Doslo je do problema prilikom dodavanja proizvoda", statusCode as number));
+    next(new CustomError("Došlo je do problema prilikom dodavanja proizvoda", statusCode as number));
   }
 };
 
@@ -171,7 +176,7 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
-    next(new CustomError("Doslo je do problema prilikom brisanja proizvoda", statusCode as number));
+    next(new CustomError("Došlo je do problema prilikom brisanja proizvoda", statusCode as number));
   }
 };
 
@@ -195,4 +200,108 @@ async function deletePurse(id: string, colorIds: string[], next: NextFunction) {
   const imageName = purse.image.imageName;
   await deleteMediaFromS3("images/products/", imageName, next);
   await PurseModel.findByIdAndDelete(id);
+}
+
+export const updateProduct = async (req: Request<unknown, unknown, AddProductRequestBody>, res: Response, next: NextFunction) => {
+  try {
+    if (!req.body.product) {
+      res.status(404).json({ message: "Product data not found, please try again" });
+      return;
+    }
+    const product = JSON.parse(req.body.product) as ProductTypes;
+    const db_product = await fetchProduct(product);
+    if (!db_product) {
+      next(new CustomError("Product not found in the database", 404));
+      return;
+    }
+
+    // Update simple data
+    db_product.category = compareAndUpdate(db_product.category, product.category) as string;
+    db_product.price = compareAndUpdate(db_product.price, product.price) as number;
+    db_product.name = compareAndUpdate(db_product.name, product.name) as string;
+    db_product.description = compareAndUpdate(db_product.description, product.description) as string;
+    db_product.supplier = compareAndUpdate(db_product.supplier, product.supplier) as string;
+
+    // Replace Image
+    if (req.file) {
+      db_product.image = (await replaceProductImage(db_product.image.imageName, req.file, next)) as ImageTypes;
+    }
+
+    // Update colors
+    const newColors = await updateColors(product, next);
+    db_product.colors = compareAndUpdate(db_product.colors, newColors) as Types.ObjectId[];
+
+    await db_product.save();
+    const populatedProduct = await fetchPopulatedProduct(product);
+
+    const io = getIO();
+    // updateLastUpdatedField('colorLastUpdatedAt', io);
+    io.emit("productUpdated", populatedProduct);
+    res.status(200).json({ message: `Proizvod ${db_product.name} je uspešno ažuriran` });
+  } catch (err) {
+    const error = err as any;
+    const statusCode = error?.statusCode ?? 500;
+    betterErrorLog("> Error updating a product", err);
+    next(new CustomError("Došlo je do problema prilikom ažuriranja proizvoda", statusCode as number));
+  }
+};
+
+async function fetchPopulatedProduct(product: ProductTypes) {
+  if (product.stockType === "Boja-Količina") {
+    return PurseModel.findById(product._id).populate("colors");
+  }
+  return DressModel.findById(product._id).populate("colors");
+}
+async function fetchProduct(product: ProductTypes) {
+  if (product.stockType === "Boja-Količina") {
+    return PurseModel.findById(product._id);
+  }
+  return DressModel.findById(product._id);
+}
+async function replaceProductImage(imageName: string, file: Express.Multer.File, next: NextFunction) {
+  await deleteMediaFromS3("images/products/", imageName, next);
+  const newImage = await uploadMediaToS3("images/products/", file, next);
+  if (!newImage) next(new CustomError("There was an error uploading the image to the storage, please try again", 500));
+  return newImage;
+}
+async function updateColors(product: ProductTypes, next: NextFunction) {
+  const colorsArray = Array.isArray(product.colors) ? product.colors : JSON.parse(product.colors);
+  let insertedColors;
+
+  // PURSE
+  if (product.stockType === "Boja-Količina") {
+    const db_product = await PurseModel.findById(product._id);
+    if (!db_product) {
+      next(new CustomError("Product not found", 404));
+      return;
+    }
+    await PurseColorModel.deleteMany({ _id: { $in: db_product.colors } });
+    const sanitizedColors = colorsArray.map((color: any) => {
+      const { _id, ...rest } = color;
+      return rest;
+    });
+    insertedColors = await PurseColorModel.insertMany(sanitizedColors);
+  }
+
+  // DRESS
+  if (product.stockType === "Boja-Veličina-Količina") {
+    const db_product = await DressModel.findById(product._id);
+    if (!db_product) {
+      next(new CustomError("Product not found", 404));
+      return;
+    }
+    await DressColorModel.deleteMany({ _id: { $in: db_product.colors } });
+    const sanitizedColors = colorsArray.map((color: any) => {
+      const { _id, ...rest } = color;
+      return rest;
+    });
+    insertedColors = await DressColorModel.insertMany(sanitizedColors);
+  }
+
+  if (!insertedColors) {
+    next(new CustomError("There was an error while updating colors", 500));
+    return;
+  }
+
+  return insertedColors.map((color) => color._id) as any;
 }

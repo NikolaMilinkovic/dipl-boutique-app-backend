@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 
 // /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { addProduct, deleteProduct, getProducts } from "../controllers/productControler.js";
+import { addProduct, deleteProduct, getProducts, updateProduct } from "../controllers/productControler.js";
 
 // import {
 //   addDress,
@@ -14,7 +14,6 @@ import { addProduct, deleteProduct, getProducts } from "../controllers/productCo
 //   getAllInactiveDresses,
 //   getAllInactivePurses,
 //   removeProductBatch,
-//   updateDisplayPriority,
 //   updateProduct,
 // } from "./yourControllerFile";
 
@@ -24,12 +23,11 @@ const upload = multer({ storage: multer.memoryStorage() });
 router.route("/add").post(upload.single("image"), addProduct);
 router.route("/get-all-products").get(getProducts);
 router.route("/delete").delete(deleteProduct);
+router.route("/update").patch(upload.single("image"), updateProduct);
 
 // router.route("/delete-item-batch").delete(removeProductBatch);
 
 // router.route("/update/:id").put(upload.single("image"), updateProduct);
-
-// router.route("/update-display-priority").post(updateDisplayPriority);
 
 // // =======================[ DRESSES ]=======================
 // router.route("/dress/:id").delete(deleteDress);

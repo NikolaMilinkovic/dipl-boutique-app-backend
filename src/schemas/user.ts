@@ -4,7 +4,7 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 export interface UserTypes extends Document {
   _id: ObjectId;
   password: string;
-  permissions?: Record<string, unknown>;
+  permissions?: PermissionTypes;
   role: string;
   settings?: {
     defaults: {
@@ -13,6 +13,22 @@ export interface UserTypes extends Document {
     };
   };
   username: string;
+}
+
+interface CRUD_PermissionTypes {
+  add: string;
+  edit: string;
+  remove: string;
+  update: string;
+}
+
+interface PermissionTypes {
+  category: CRUD_PermissionTypes;
+  color: CRUD_PermissionTypes;
+  courier: CRUD_PermissionTypes;
+  order: CRUD_PermissionTypes;
+  product: CRUD_PermissionTypes;
+  supplier: CRUD_PermissionTypes;
 }
 
 const UserSchema = new Schema<UserTypes>(
@@ -24,24 +40,28 @@ const UserSchema = new Schema<UserTypes>(
     permissions: {
       default: () => ({
         category: {
-          add_category: true,
-          edit_category: true,
-          remove_category: true,
+          add: true,
+          edit: true,
+          remove: true,
+          update: true,
         },
         color: {
-          add_color: true,
-          edit_color: true,
-          remove_color: true,
+          add: true,
+          edit: true,
+          remove: true,
+          update: true,
         },
         courier: {
-          add_courier: true,
-          edit_courier: true,
-          remove_courier: true,
+          add: true,
+          edit: true,
+          remove: true,
+          update: true,
         },
         supplier: {
-          add_supplier: true,
-          edit_supplier: true,
-          remove_supplier: true,
+          add: true,
+          edit: true,
+          remove: true,
+          update: true,
         },
       }),
       type: Object,
