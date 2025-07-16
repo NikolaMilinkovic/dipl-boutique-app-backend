@@ -1,6 +1,7 @@
 import dotenv from "dotenv";
 import OpenAI from "openai";
 
+import CustomError from "../CustomError.js";
 import { betterConsoleLog } from "../logMethods.js";
 
 dotenv.config();
@@ -80,6 +81,9 @@ export async function parseOrderData(data: string): Promise<ParsedOrderData> {
     });
 
     // The content is expected to be JSON string (because of json_schema), parse it
+    if (!completion.choices[0].message.content) {
+      throw new Error("Reading response content from AI failed");
+    }
     return JSON.parse(completion.choices[0].message.content) as ParsedOrderData;
   } catch (error) {
     betterConsoleLog("Error in parseOrderData:", error);
