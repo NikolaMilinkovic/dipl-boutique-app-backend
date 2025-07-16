@@ -43,7 +43,8 @@ export const getProducts = async (req: Request, res: Response, next: NextFunctio
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
-    next(new CustomError("Došlo je do problema prilikom preuzimanja proizvoda", statusCode as number));
+    betterConsoleLog("> Error while fetching products", err);
+    next(new CustomError("There was an error while fething products", statusCode as number));
   }
 };
 
@@ -86,7 +87,7 @@ export const addProduct = async (req: Request<unknown, unknown, AddProductReques
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog(`> Error adding a new product: `, err);
-    next(new CustomError("Došlo je do problema prilikom dodavanja proizvoda", statusCode as number));
+    next(new CustomError("There was an error while adding product", statusCode as number));
   }
 };
 
@@ -176,7 +177,7 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
-    next(new CustomError("Došlo je do problema prilikom brisanja proizvoda", statusCode as number));
+    next(new CustomError("There was an error while deleting the product", statusCode as number));
   }
 };
 
@@ -242,7 +243,7 @@ export const updateProduct = async (req: Request<unknown, unknown, AddProductReq
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error updating a product", err);
-    next(new CustomError("Došlo je do problema prilikom ažuriranja proizvoda", statusCode as number));
+    next(new CustomError("There was an error while updating the product", statusCode as number));
   }
 };
 

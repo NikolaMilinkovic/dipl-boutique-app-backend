@@ -17,7 +17,7 @@ export const getColors = async (req: Request, res: Response, next: NextFunction)
     res.status(200).json(colors);
   } catch (error) {
     betterErrorLog("> Error getting all colors:", error);
-    next(new CustomError("Došlo je do problema prilikom preuzimanja boja", 500));
+    next(new CustomError("There was an error while fetching colors", 500));
     return;
   }
 };
@@ -43,7 +43,7 @@ export const addColor = async (req: Request, res: Response, next: NextFunction) 
     // updateLastUpdatedField("colorLastUpdatedAt", io);
     io.emit("colorAdded", newColor);
 
-    res.status(200).json({ color: newColor, message: `${name} boja je uspešno dodata` });
+    res.status(200).json({ color: newColor, message: `${name} color successfully added` });
   } catch (error: unknown) {
     const mongoError = error as {
       cause?: {
@@ -58,13 +58,13 @@ export const addColor = async (req: Request, res: Response, next: NextFunction) 
 
     if (mongoError.code === 11000 || mongoErrCode === 11000) {
       const name = mongoError.cause?.keyValue?.name ?? "Boja";
-      next(new CustomError(`${name} boja već postoji`, 409));
+      next(new CustomError(`${name} already exists`, 409));
       return;
     }
 
     betterErrorLog("> Error adding a new color:", error);
     const statusCode = mongoError.statusCode ?? 500;
-    next(new CustomError(`Došlo je do problema prilikom dodavanja boje [${mongoError.code}]`, statusCode));
+    next(new CustomError(`There was an error while adding color [${mongoError.code}]`, statusCode));
   }
 };
 
@@ -74,7 +74,7 @@ export const deleteColor = async (req: Request, res: Response, next: NextFunctio
     const { id } = req.params;
     const deletedColor = await Color.findByIdAndDelete(id);
     if (!deletedColor) {
-      next(new CustomError(`Boja sa ID: ${id} nije pronađena`, 404));
+      next(new CustomError(`Color with ID: ${id} was not found`, 404));
       return;
     }
 
@@ -83,12 +83,12 @@ export const deleteColor = async (req: Request, res: Response, next: NextFunctio
     // updateLastUpdatedField('colorLastUpdatedAt', io);
     io.emit("colorRemoved", deletedColor._id);
 
-    res.status(200).json({ color: deletedColor, message: `${deletedColor.name} boja je uspešno obrisana` });
+    res.status(200).json({ color: deletedColor, message: `${deletedColor.name} has been successfully deleteda` });
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error deleting a color:", error);
-    next(new CustomError("Došlo je do problema prilikom brisanja boje", statusCode));
+    next(new CustomError("There was an error while deleting color", statusCode));
     return;
   }
 };
@@ -111,13 +111,13 @@ export const updateColor = async (req: Request, res: Response, next: NextFunctio
 
     res.status(200).json({
       color: updatedColor,
-      message: `Boja uspešno sačuvana kao ${name}`,
+      message: `Color saved as ${name}`,
     });
   } catch (err) {
     const error = err as any;
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error updating a color:", error);
-    next(new CustomError("Došlo je do problema prilikom promene boje", statusCode));
+    next(new CustomError("There was an error while updating color", statusCode));
     return;
   }
 };

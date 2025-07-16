@@ -46,7 +46,7 @@ export const addSupplier = async (req: Request, res: Response, next: NextFunctio
     }
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error adding a new supplier:", error);
-    next(new CustomError("Doslo je do problema prilikom dodavanja dobavljača", statusCode));
+    next(new CustomError("There was an error while adding a supplier", statusCode));
     return;
   }
 };
@@ -70,7 +70,7 @@ export const updateSupplier = async (req: Request, res: Response, next: NextFunc
     const error = err as any;
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error updating a supplier:", error);
-    next(new CustomError("Doslo je do problema prilikom promene dobavljača", statusCode));
+    next(new CustomError("There was an error while updating the supplier", statusCode));
     return;
   }
 };
@@ -81,7 +81,7 @@ export const deleteSupplier = async (req: Request, res: Response, next: NextFunc
     const { id } = req.params;
     const deletedSupplier = await Supplier.findByIdAndDelete(id);
     if (!deletedSupplier) {
-      next(new CustomError(`Dobavljač sa ID: ${id} nije pronadjen`, 404));
+      next(new CustomError(`Supplier with ID: ${id} was not found`, 404));
       return;
     }
 
@@ -90,12 +90,12 @@ export const deleteSupplier = async (req: Request, res: Response, next: NextFunc
     // await updateLastUpdatedField("supplierLastUpdatedAt", io);
     io.emit("supplierRemoved", deletedSupplier._id);
 
-    res.status(200).json({ message: `Dobavljač ${deletedSupplier.name} je uspešno obrisan`, supplier: deletedSupplier });
+    res.status(200).json({ message: `Supplier ${deletedSupplier.name} has been successfully deleted`, supplier: deletedSupplier });
   } catch (err) {
     const error = err as any;
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error deleting a supplier:", error);
-    next(new CustomError("Doslo je do problema prilikom brisanja dobavljača", statusCode));
+    next(new CustomError("There was an error while deleting the supplier", statusCode));
     return;
   }
 };

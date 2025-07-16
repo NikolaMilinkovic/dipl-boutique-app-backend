@@ -36,16 +36,16 @@ export const addCourier = async (req: Request, res: Response, next: NextFunction
     // await updateLastUpdatedField("courierLastUpdatedAt", io);
     io.emit("courierAdded", newCourier);
 
-    res.status(200).json({ courier: newCourier, message: `Kurir ${name} je uspešno dodat` });
+    res.status(200).json({ courier: newCourier, message: `Courier ${name} has been successfully added` });
   } catch (err) {
     const error = err as any;
     if (error.code === 11000) {
-      next(new CustomError(`Kurir ${error.keyValue.name} već postoji`, 409));
+      next(new CustomError(`Courier ${error.keyValue.name} already exists`, 409));
       return;
     }
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error adding a new courier:", error);
-    next(new CustomError("Došlo je do problema prilikom dodavanja kurira", statusCode));
+    next(new CustomError("There was an error while adding a courier", statusCode));
     return;
   }
 };
@@ -66,13 +66,13 @@ export const updateCourier = async (req: Request, res: Response, next: NextFunct
 
     res.status(200).json({
       courier: updatedCourier,
-      message: `Kurir ${name} uspešno sačuvan`,
+      message: `Courier ${name} successfully updated`,
     });
   } catch (err) {
     const error = err as any;
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error updating a courier:", error);
-    next(new CustomError("Do[lo je do problema prilikom promene kurira", statusCode));
+    next(new CustomError("There was an error while updating courier", statusCode));
     return;
   }
 };
@@ -83,7 +83,7 @@ export const deleteCourier = async (req: Request, res: Response, next: NextFunct
     const { id } = req.params;
     const deleterCourier = await Courier.findByIdAndDelete(id);
     if (!deleterCourier) {
-      next(new CustomError(`Kurir sa ID: ${id} nije pronadjen`, 404));
+      next(new CustomError(`Courier with ID: ${id} was not found`, 404));
       return;
     }
 
@@ -92,12 +92,12 @@ export const deleteCourier = async (req: Request, res: Response, next: NextFunct
     // await updateLastUpdatedField("courierLastUpdatedAt", io);
     io.emit("courierRemoved", deleterCourier._id);
 
-    res.status(200).json({ courier: deleterCourier, message: `Kurir ${deleterCourier.name} je uspešno obrisan` });
+    res.status(200).json({ courier: deleterCourier, message: `Courier ${deleterCourier.name} has been successfully deleted` });
   } catch (err) {
     const error = err as any;
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error deleting a courier:", error);
-    next(new CustomError("Došlo je do problema prilikom brisanja kurira", statusCode));
+    next(new CustomError("There was an error while deleting courier", statusCode));
     return;
   }
 };

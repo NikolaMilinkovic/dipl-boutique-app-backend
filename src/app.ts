@@ -75,6 +75,9 @@ app.use("/courier", couriersRouter);
 import productsRouter from "./routes/products.js";
 app.use("/product", productsRouter);
 
+import ordersRouter from "./routes/orders.js";
+app.use("/orders", ordersRouter);
+
 // =====================[ ERROR HANDLERS ]======================
 import errorHandler from "./controllers/errorControler.js";
 import { betterErrorLog } from "./utils/logMethods.js";

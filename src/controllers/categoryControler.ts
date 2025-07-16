@@ -17,7 +17,7 @@ export const getCategories = async (req: Request, res: Response, next: NextFunct
     res.status(200).json(categories);
   } catch (error: unknown) {
     betterErrorLog("> Error while fetching categories:", error);
-    next(new CustomError("Došlo je do problema prilikom preuzimanja kategorija", 500));
+    next(new CustomError("There was an error while fetching categories", 500));
     return;
   }
 };
@@ -41,16 +41,16 @@ export const addCategory = async (req: Request, res: Response, next: NextFunctio
     // updateLastUpdatedField("categoryLastUpdatedAt", io);
     io.emit("categoryAdded", newCategory);
 
-    res.status(200).json({ category: newCategory, message: `Kategorija ${name} je uspešno dodata` });
+    res.status(200).json({ category: newCategory, message: `Category ${name} successfully added` });
   } catch (err) {
     const error = err as any;
     if (error.code === 11000) {
-      next(new CustomError(`Kategorija ${error?.keyValue?.name} već postoji`, 409));
+      next(new CustomError(`Category ${error?.keyValue?.name} alredy exists`, 409));
       return;
     }
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error while adding a new category:", error);
-    next(new CustomError("Došlo je do problema prilikom dodavanja kategorije", statusCode));
+    next(new CustomError("There was an error while adding a new category", statusCode));
     return;
   }
 };
@@ -61,7 +61,7 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
     const { id } = req.params;
     const deletedCategory = await Category.findByIdAndDelete(id);
     if (!deletedCategory) {
-      next(new CustomError(`Kategorija sa ID: ${id} nije pronadjena`, 404));
+      next(new CustomError(`Category with ID: ${id} was not found`, 404));
       return;
     }
 
@@ -70,12 +70,12 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
     // updateLastUpdatedField("categoryLastUpdatedAt", io);
     io.emit("categoryRemoved", deletedCategory._id);
 
-    res.status(200).json({ color: deletedCategory, message: `Kategorija ${deletedCategory.name} je uspešno obrisana` });
+    res.status(200).json({ color: deletedCategory, message: `Category ${deletedCategory.name} has been successfully deleted` });
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error while deleting a category:", error);
-    next(new CustomError("Došlo je do problema prilikom brisanja kategorije", statusCode));
+    next(new CustomError("There was an error while deleting the category", statusCode));
     return;
   }
 };
@@ -95,7 +95,7 @@ export const updateCategory = async (req: Request, res: Response, next: NextFunc
     // Send a response
     res.status(200).json({
       category: updatedCategory,
-      message: `Kategorija uspešno sačuvana kao ${name}`,
+      message: `Category saved successfully as ${name}`,
     });
   } catch (error) {
     betterErrorLog("> Error while updating a category:", error);
