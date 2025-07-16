@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -16,7 +17,7 @@ export async function dressColorStockHandler(colorId: string, sizeId: string, op
     }
 
     // Find the correct size object
-    const sizeToUpdate = dressColor.sizes.find((size) => size._id.toString() === sizeId);
+    const sizeToUpdate = dressColor.sizes.find((size: any) => size._id.toString() === sizeId);
     if (!sizeToUpdate) {
       next(new CustomError(`Sizer objekat nije pronadjen za id ${sizeId}`, 404));
       return;

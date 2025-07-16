@@ -198,12 +198,6 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
         console.error(error);
       }
     }
-    // if (dressUpdateData.length > 0) {
-    //   io.emit("handleDressStockDecrease", dressUpdateData);
-    // }
-    // if (purseUpdateData.length > 0) {
-    //   io.emit("handlePurseStockDecrease", purseUpdateData);
-    // }
 
     const stockUpdateData = [...dressUpdateData, ...purseUpdateData];
     io.emit("handleProductStockDecrease", stockUpdateData);
