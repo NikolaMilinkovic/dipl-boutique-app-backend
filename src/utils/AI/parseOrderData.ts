@@ -1,10 +1,11 @@
-import dotenv from "dotenv";
 import OpenAI from "openai";
 
-import CustomError from "../CustomError.js";
 import { betterConsoleLog } from "../logMethods.js";
 
-dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+  const dotenv = await import("dotenv");
+  dotenv.config();
+}
 
 interface ParsedOrderData {
   address: null | string;
