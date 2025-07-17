@@ -212,3 +212,24 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
     return;
   }
 };
+
+export const getOrders = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const processedOrders = await Order.find({ processed: true }).sort({ createdAt: -1 });
+    const unprocessedOrders = await Order.find({ processed: false }).sort({ createdAt: -1 });
+    const unpackedOrders = await Order.find({ packed: false, packedIndicator: false }).sort({ createdAt: -1 });
+    const orders = {
+      processedOrders,
+      unpackedOrders,
+      unprocessedOrders,
+    };
+
+    res.status(200).json({ message: "Orders fetched successfully", orders });
+  } catch (err) {
+    const error = err as any;
+    const statusCode = error?.statusCode ?? 500;
+    betterErrorLog("> Error fetching processed orders:", error);
+    next(new CustomError("Došlo je do problema prilikom preuzimanja porudžbina", Number(statusCode)));
+    return;
+  }
+};

@@ -173,7 +173,7 @@ export const deleteProduct = async (req: Request, res: Response, next: NextFunct
     const io = getIO();
     // updateLastUpdatedField('colorLastUpdatedAt', io);
     io.emit("productRemoved", id);
-    res.status(200).json({ message: `Proizvod je uspešno obrisan` });
+    res.status(200).json({ message: `Product is successfully deleted` });
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;
