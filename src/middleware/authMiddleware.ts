@@ -86,7 +86,14 @@ export default function () {
       }
 
       const token = generateToken(user._id.toString(), 10);
-      res.json({ message: "Uspešno logovanje na sistem.", token });
+      const safeUser = {
+        id: user._id.toString(),
+        permissions: user.permissions,
+        role: user.role,
+        settings: user.settings,
+        username: user.username,
+      };
+      res.json({ message: "Uspešno logovanje na sistem.", token, user: safeUser });
     } catch (error) {
       betterErrorLog("> Error logging in a user:", error);
       next(new CustomError("Uh oh.. Server error.. Vreme je da pozovete Milija..", 500));

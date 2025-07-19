@@ -5,10 +5,11 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { NextFunction, Request, Response } from "express";
 
-import Color, { IColor } from "../schemas/color.js";
-import { getIO } from "../socket/initSocket.js";
-import CustomError from "../utils/CustomError.js";
-import { betterErrorLog } from "../utils/logMethods.js";
+import Color, { IColor } from "../../schemas/color.js";
+import { getIO } from "../../socket/initSocket.js";
+import CustomError from "../../utils/CustomError.js";
+import { betterErrorLog } from "../../utils/logMethods.js";
+import { AddColorInput, addColorLogic } from "./colorsMethods.js";
 
 // GET ALL COLORS
 export const getColors = async (req: Request, res: Response, next: NextFunction) => {
@@ -22,28 +23,12 @@ export const getColors = async (req: Request, res: Response, next: NextFunction)
   }
 };
 
-interface ColorRequestBody {
-  colorCode?: string;
-  name: string;
-}
-
 // ADD NEW COLOR
 export const addColor = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { colorCode, name } = req.body as ColorRequestBody;
-    const newColor = new Color({
-      colorCode: colorCode ?? "#68e823",
-      name: name,
-    });
-
-    await newColor.save();
-
-    // SOCKET HANDLING
-    const io = getIO();
-    // updateLastUpdatedField("colorLastUpdatedAt", io);
-    io.emit("colorAdded", newColor);
-
-    res.status(200).json({ color: newColor, message: `${name} color successfully added` });
+    const { colorCode, name } = req.body as AddColorInput;
+    const result = await addColorLogic({ colorCode, name });
+    res.status(200).json(result);
   } catch (error: unknown) {
     const mongoError = error as {
       cause?: {

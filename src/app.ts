@@ -55,6 +55,9 @@ const authModule: AuthModule = authModuleFactory();
 
 // =====================[ UNPROTECTED ROUTES ]=====================
 app.post("/login", authModule.login);
+
+import agentRouter from "./routes/agent.js";
+app.use("/agent", agentRouter);
 // =====================[ \UNPROTECTED ROUTES ]====================
 
 // =====================[ PROTECTED ROUTERS ]======================
