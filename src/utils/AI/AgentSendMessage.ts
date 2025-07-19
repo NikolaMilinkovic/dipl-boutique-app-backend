@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-deprecated */
 import OpenAI from "openai";
 
-import { addColorLogic } from "../../controllers/colors/colorsMethods.js";
+import { AddColorInput, addColorLogic } from "../../controllers/colors/colorsMethods.js";
 import { betterConsoleLog } from "../logMethods.js";
 
 if (process.env.NODE_ENV !== "production") {
@@ -71,7 +71,7 @@ export async function handleAgentMessages(messages: AgentMessage[]): Promise<Age
 
       // METHODS
       if (name === "add_color") {
-        functionResult = await addColorLogic(args);
+        functionResult = await addColorLogic(args as AddColorInput);
       }
 
       const updatedMessages = [
@@ -85,15 +85,15 @@ export async function handleAgentMessages(messages: AgentMessage[]): Promise<Age
       ];
 
       const finalCompletion = await openai.chat.completions.create({
-        messages: updatedMessages,
+        messages: updatedMessages as AgentMessage[],
         model: "gpt-4o-2024-08-06",
       });
 
-      return { message: finalCompletion.choices[0].message };
+      return { message: finalCompletion.choices[0].message as AgentMessage };
     }
 
     // If no function call, return AI's direct message
-    return { message };
+    return { message } as AgentResponse;
   } catch (error) {
     betterConsoleLog("Error in parseOrderData:", error);
     throw error;
