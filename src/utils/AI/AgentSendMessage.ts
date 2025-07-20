@@ -1,9 +1,11 @@
+/* eslint-disable prefer-const */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-deprecated */
 import OpenAI from "openai";
 
-import { AddColorInput, addColorLogic } from "../../controllers/colors/colorsMethods.js";
+import { colorsMethodsDescriptionArr } from "../../controllers/colors/colorsMethods.js";
 import { betterConsoleLog } from "../logMethods.js";
+import { agentColorMethods } from "./color/agentColorMethods.js";
 
 if (process.env.NODE_ENV !== "production") {
   const dotenv = await import("dotenv");
@@ -24,79 +26,64 @@ export async function handleAgentMessages(messages: AgentMessage[]): Promise<Age
       organization: process.env.ORGANIZATION,
       project: process.env.PROJECT_ID,
     });
-    // Array of functions > Move this into a separate method
-    const functions = [
-      {
-        description: "Add a new color to the boutique",
-        name: "add_color",
-        parameters: {
-          properties: {
-            colorCode: {
-              description: "Hex color code, default is #68e823 if not provided",
-              type: "string",
-            },
-            name: {
-              description: "Name of the color to add",
-              type: "string",
-            },
-          },
-          required: ["name"],
-          type: "object",
-        },
-      },
-    ];
 
-    const completion = await openai.chat.completions.create({
-      function_call: "auto",
-      functions,
-      messages: [
-        {
-          content:
-            "You are Infi, a versatile AI agent that assists users by answering questions, calling methods on the backend to fulfil user requests and more. Use backend functions as needed. Always keep your asnwers short and concize, do not waste tokens when answering!",
-          role: "system",
-        },
-        ...messages,
-      ],
-      model: "gpt-4o-2024-08-06",
-    });
+    const functions = colorsMethodsDescriptionArr();
 
-    const message = completion.choices[0].message;
-    console.log(message);
+    const systemMessage: AgentMessage = {
+      content:
+        "You are Infi, a versatile AI agent that assists users by answering questions and calling backend functions. Keep answers short and concise.",
+      role: "system",
+    };
 
-    if (message.function_call) {
-      const toolCall = message.function_call;
-      const { arguments: argsJson, name } = toolCall;
-      const args = JSON.parse(argsJson);
-      let functionResult;
+    const runningMessages: AgentMessage[] = [systemMessage, ...messages];
+    let callCount = 0;
+    const maxCalls = 10;
 
-      // METHODS
-      if (name === "add_color") {
-        functionResult = await addColorLogic(args as AddColorInput);
-      }
-
-      const updatedMessages = [
-        ...messages,
-        message,
-        {
-          content: JSON.stringify(functionResult),
-          name,
-          role: "function",
-        },
-      ];
-
-      const finalCompletion = await openai.chat.completions.create({
-        messages: updatedMessages as AgentMessage[],
+    while (callCount < maxCalls) {
+      callCount++;
+      const completion = await openai.chat.completions.create({
+        function_call: "auto",
+        functions,
+        messages: runningMessages,
         model: "gpt-4o-2024-08-06",
       });
 
-      return { message: finalCompletion.choices[0].message as AgentMessage };
+      const message = completion.choices[0].message;
+
+      if (message.function_call) {
+        const { arguments: argsJson, name } = message.function_call;
+        const args = JSON.parse(argsJson || "{}");
+        let functionResult;
+
+        // METHODS
+        functionResult = await agentColorMethods(name, args);
+
+        runningMessages.push(message as AgentMessage);
+        runningMessages.push({
+          content: JSON.stringify(functionResult),
+          name,
+          role: "function",
+        });
+      } else {
+        // No more function calls, return final message
+        return { message } as any;
+      }
     }
 
-    // If no function call, return AI's direct message
-    return { message } as AgentResponse;
+    return {
+      message: {
+        content: "I'm sorry, I wasn't able to finish processing your request.",
+        role: "assistant",
+      },
+    };
   } catch (error) {
-    betterConsoleLog("Error in parseOrderData:", error);
-    throw error;
+    betterConsoleLog("Error in AgentSendMessage:", error);
+    return {
+      message: {
+        content: "An error occurred while processing your request.",
+        role: "assistant",
+      },
+    };
   }
 }
 

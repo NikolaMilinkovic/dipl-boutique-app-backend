@@ -5,16 +5,15 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { NextFunction, Request, Response } from "express";
 
-import Color, { IColor } from "../../schemas/color.js";
-import { getIO } from "../../socket/initSocket.js";
+import { IColor } from "../../schemas/color.js";
 import CustomError from "../../utils/CustomError.js";
 import { betterErrorLog } from "../../utils/logMethods.js";
-import { AddColorInput, addColorLogic } from "./colorsMethods.js";
+import { AddColorInput, addColorLogic, deleteColorLogic, getColorsLogic, updateColorLogic } from "./colorsMethods.js";
 
 // GET ALL COLORS
 export const getColors = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const colors: IColor[] = await Color.find();
+    const colors: IColor[] = await getColorsLogic();
     res.status(200).json(colors);
   } catch (error) {
     betterErrorLog("> Error getting all colors:", error);
@@ -57,16 +56,11 @@ export const addColor = async (req: Request, res: Response, next: NextFunction) 
 export const deleteColor = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const deletedColor = await Color.findByIdAndDelete(id);
+    const deletedColor = await deleteColorLogic(id);
     if (!deletedColor) {
       next(new CustomError(`Color with ID: ${id} was not found`, 404));
       return;
     }
-
-    // SOCKET HANDLING
-    const io = getIO();
-    // updateLastUpdatedField('colorLastUpdatedAt', io);
-    io.emit("colorRemoved", deletedColor._id);
 
     res.status(200).json({ color: deletedColor, message: `${deletedColor.name} has been successfully deleteda` });
   } catch (err) {
@@ -87,12 +81,7 @@ export const updateColor = async (req: Request, res: Response, next: NextFunctio
   try {
     const { colorCode, name } = req.body as ColorRequestBody;
     const { id } = req.params;
-    const updatedColor = await Color.findByIdAndUpdate(id, { colorCode, name }, { new: true });
-
-    // SOCKET HANDLING
-    // updateLastUpdatedField('colorLastUpdatedAt', io);
-    const io = getIO();
-    io.emit("colorUpdated", updatedColor);
+    const updatedColor = await updateColorLogic(id, colorCode, name);
 
     res.status(200).json({
       color: updatedColor,

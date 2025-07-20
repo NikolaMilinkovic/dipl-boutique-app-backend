@@ -107,7 +107,7 @@ export default function () {
 
   function generateToken(id: string, years_duration = 10): string {
     try {
-      const signed_token = jwt.sign({ userId: id }, process.env.JWT_SECRET || "", {
+      const signed_token = jwt.sign({ userId: id }, process.env.JWT_SECRET ?? "", {
         expiresIn: `${years_duration}y`,
       });
       return signed_token;

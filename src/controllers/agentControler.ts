@@ -15,7 +15,8 @@ export const handleAgentResponse = async (req: Request<unknown, unknown, AgentRe
     const { messages } = req.body;
     if (messages.length === 0) return;
     const response = await handleAgentMessages(messages);
-    console.log("AI response:", response.message);
+
+    // TO DO - Add a separate chat method for users that are not logged in
 
     res.status(200).json({
       text: response.message.content || "",
