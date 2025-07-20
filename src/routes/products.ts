@@ -2,7 +2,7 @@ import express from "express";
 import multer from "multer";
 
 // /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { addProduct, deleteProduct, getProducts, updateProduct } from "../controllers/productControler.js";
+import { addProduct, deleteProduct, getProducts, updateProduct } from "../controllers/products/productControler.js";
 
 // import {
 //   addDress,

@@ -6,15 +6,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { NextFunction, Request, Response } from "express";
 
-import Supplier from "../schemas/supplier.js";
-import { getIO } from "../socket/initSocket.js";
-import CustomError from "../utils/CustomError.js";
-import { betterErrorLog } from "../utils/logMethods.js";
+import Supplier from "../../schemas/supplier.js";
+import { getIO } from "../../socket/initSocket.js";
+import CustomError from "../../utils/CustomError.js";
+import { betterErrorLog } from "../../utils/logMethods.js";
+import { addSupplierLogic, deleteSupplierLogic, getSuppliersLogic, updateSupplierLogic } from "./supplierMethods.js";
 
 // GET ALL SUPPLIERS
 export const getSuppliers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const suppliers = await Supplier.find();
+    const suppliers = await getSuppliersLogic();
     res.status(200).json(suppliers);
   } catch (error) {
     betterErrorLog("> Error fetchin suppliers:", error);
@@ -27,15 +28,7 @@ export const getSuppliers = async (req: Request, res: Response, next: NextFuncti
 export const addSupplier = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name } = req.body;
-    const newSupplier = new Supplier({
-      name: name,
-    });
-
-    await newSupplier.save();
-
-    const io = getIO();
-    // await updateLastUpdatedField("supplierLastUpdatedAt", io);
-    io.emit("supplierAdded", newSupplier);
+    const newSupplier = await addSupplierLogic(name);
 
     res.status(200).json({ message: `${newSupplier.name} je uspešno dodat `, supplier: newSupplier });
   } catch (err) {
@@ -56,11 +49,7 @@ export const updateSupplier = async (req: Request, res: Response, next: NextFunc
   try {
     const { name } = req.body;
     const { id } = req.params;
-    const updatedSupplier = await Supplier.findByIdAndUpdate(id, { name }, { new: true });
-
-    const io = getIO();
-    // await updateLastUpdatedField("supplierLastUpdatedAt", io);
-    io.emit("supplierUpdated", updatedSupplier);
+    const updatedSupplier = await updateSupplierLogic(id, name);
 
     res.status(200).json({
       message: `Dobavljač uspešno sačuvan kao ${name}`,
@@ -79,17 +68,11 @@ export const updateSupplier = async (req: Request, res: Response, next: NextFunc
 export const deleteSupplier = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const deletedSupplier = await Supplier.findByIdAndDelete(id);
+    const deletedSupplier = await deleteSupplierLogic(id);
     if (!deletedSupplier) {
       next(new CustomError(`Supplier with ID: ${id} was not found`, 404));
       return;
     }
-
-    // SOCKET HANDLING
-    const io = getIO();
-    // await updateLastUpdatedField("supplierLastUpdatedAt", io);
-    io.emit("supplierRemoved", deletedSupplier._id);
-
     res.status(200).json({ message: `Supplier ${deletedSupplier.name} has been successfully deleted`, supplier: deletedSupplier });
   } catch (err) {
     const error = err as any;

@@ -8,16 +8,16 @@ import { Type } from "@aws-sdk/client-s3";
 import { NextFunction, Request, Response } from "express";
 import { ObjectId, Types } from "mongoose";
 
-import { DressColorTypes, ImageTypes, NewProductTypes, ProductColorTypes, ProductTypes, PurseColorTypes } from "../global/types.js";
-import DressModel from "../schemas/dress.js";
-import DressColorModel from "../schemas/dressColor.js";
-import PurseModel from "../schemas/purse.js";
-import PurseColorModel from "../schemas/purseColor.js";
-import { getIO } from "../socket/initSocket.js";
-import CustomError from "../utils/CustomError.js";
-import { compareAndUpdate } from "../utils/helperMethods.js";
-import { betterConsoleLog, betterErrorLog } from "../utils/logMethods.js";
-import { deleteMediaFromS3, uploadMediaToS3 } from "../utils/s3/S3DefaultMethods.js";
+import { DressColorTypes, ImageTypes, NewProductTypes, ProductColorTypes, ProductTypes, PurseColorTypes } from "../../global/types.js";
+import DressModel from "../../schemas/dress.js";
+import DressColorModel from "../../schemas/dressColor.js";
+import PurseModel from "../../schemas/purse.js";
+import PurseColorModel from "../../schemas/purseColor.js";
+import { getIO } from "../../socket/initSocket.js";
+import CustomError from "../../utils/CustomError.js";
+import { compareAndUpdate } from "../../utils/helperMethods.js";
+import { betterConsoleLog, betterErrorLog } from "../../utils/logMethods.js";
+import { deleteMediaFromS3, uploadMediaToS3 } from "../../utils/s3/S3DefaultMethods.js";
 
 interface AddProductRequestBody {
   product: string;

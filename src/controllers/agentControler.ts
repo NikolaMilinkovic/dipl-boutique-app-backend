@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 
 // import { getIO } from "../socket/initSocket.js";
-import { AgentMessage, handleAgentMessages } from "../utils/AI/AgentSendMessage.js";
+import { AgentMessage, handleAgentMessages, handleUnauthorizedAgentMessages } from "../utils/AI/AgentSendMessage.js";
 import CustomError from "../utils/CustomError.js";
 import { betterErrorLog } from "../utils/logMethods.js";
 
@@ -12,12 +12,17 @@ interface AgentRequestBody {
 export const handleAgentResponse = async (req: Request<unknown, unknown, AgentRequestBody>, res: Response, next: NextFunction) => {
   try {
     // token
-    const { messages } = req.body;
+    const { messages, token } = req.body;
     if (messages.length === 0) return;
-    const response = await handleAgentMessages(messages);
+    let response;
 
-    // TO DO - Add a separate chat method for users that are not logged in
+    if (token) response = await handleAgentMessages(messages);
+    if (!token) response = await handleUnauthorizedAgentMessages(messages);
 
+    if (response === undefined) {
+      next(new CustomError("There was an error while handling agent responses", 500));
+      return;
+    }
     res.status(200).json({
       text: response.message.content || "",
     });

@@ -5,16 +5,16 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NextFunction, Request, Response } from "express";
 
-import DressModel from "../schemas/dress.js";
-import Order from "../schemas/order.js";
-import PurseModel from "../schemas/purse.js";
-import { getIO } from "../socket/initSocket.js";
-import { parseOrderData } from "../utils/AI/parseOrderData.js";
-import CustomError from "../utils/CustomError.js";
-import { dressColorStockHandler } from "../utils/dress/dressMethods.js";
-import { betterErrorLog } from "../utils/logMethods.js";
-import { purseColorStockHandler } from "../utils/purse/purseMethods.js";
-import { uploadMediaToS3 } from "../utils/s3/S3DefaultMethods.js";
+import DressModel from "../../schemas/dress.js";
+import Order from "../../schemas/order.js";
+import PurseModel from "../../schemas/purse.js";
+import { getIO } from "../../socket/initSocket.js";
+import { parseOrderData } from "../../utils/AI/parseOrderData.js";
+import CustomError from "../../utils/CustomError.js";
+import { dressColorStockHandler } from "../../utils/dress/dressMethods.js";
+import { betterErrorLog } from "../../utils/logMethods.js";
+import { purseColorStockHandler } from "../../utils/purse/purseMethods.js";
+import { uploadMediaToS3 } from "../../utils/s3/S3DefaultMethods.js";
 
 interface ParseOrderRequestBody {
   orderData: string;
@@ -144,7 +144,7 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
           // Update the dress stock in DB
           const updatedItem = await dressColorStockHandler(product.selectedColorId as string, product.selectedSizeId as string, "decrement", 1, next);
           const dress = await DressModel.findById(product.itemReference);
-          if (!dress || !dress.totalStock) {
+          if (!dress?.totalStock) {
             res.status(500).json({ message: "There was an error while updating the dress data" });
             return;
           }
@@ -171,7 +171,7 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
           // Update the purse stock in DB
           const updatedItem = await purseColorStockHandler(product.selectedColorId as string, "decrement", 1, next);
           const purse = await PurseModel.findById(product.itemReference);
-          if (!purse || !purse.totalStock) {
+          if (!purse?.totalStock) {
             res.status(500).json({ message: "There was an error while updating the purse data" });
             return;
           }

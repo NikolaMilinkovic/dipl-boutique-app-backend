@@ -1,7 +1,7 @@
 import express from "express";
 import multer from "multer";
 
-import { addOrder, getOrders, parseOrder } from "../controllers/ordersControler.js";
+import { addOrder, getOrders, parseOrder } from "../controllers/orders//ordersControler.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });

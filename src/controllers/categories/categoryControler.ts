@@ -5,15 +5,16 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { NextFunction, Request, Response } from "express";
 
-import Category from "../schemas/category.js";
-import { getIO } from "../socket/initSocket.js";
-import CustomError from "../utils/CustomError.js";
-import { betterErrorLog } from "../utils/logMethods.js";
+import Category from "../../schemas/category.js";
+import { getIO } from "../../socket/initSocket.js";
+import CustomError from "../../utils/CustomError.js";
+import { betterErrorLog } from "../../utils/logMethods.js";
+import { addCategoryLogic, deleteCategoryLogic, getCategoriesLogic, updateCategoryLogic } from "./categoriesMethods.js";
 
 // GET
 export const getCategories = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const categories = await Category.find();
+    const categories = await getCategoriesLogic();
     res.status(200).json(categories);
   } catch (error: unknown) {
     betterErrorLog("> Error while fetching categories:", error);
@@ -31,15 +32,7 @@ interface CategoryAddRequestTypes {
 export const addCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { name, stockType } = req.body as CategoryAddRequestTypes;
-    const newCategory = new Category({
-      name: name,
-      stockType: stockType,
-    });
-    await newCategory.save();
-
-    const io = getIO();
-    // updateLastUpdatedField("categoryLastUpdatedAt", io);
-    io.emit("categoryAdded", newCategory);
+    const newCategory = await addCategoryLogic(name, stockType);
 
     res.status(200).json({ category: newCategory, message: `Category ${name} successfully added` });
   } catch (err) {
@@ -59,16 +52,11 @@ export const addCategory = async (req: Request, res: Response, next: NextFunctio
 export const deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const deletedCategory = await Category.findByIdAndDelete(id);
+    const deletedCategory = await deleteCategoryLogic(id);
     if (!deletedCategory) {
       next(new CustomError(`Category with ID: ${id} was not found`, 404));
       return;
     }
-
-    // SOCKET HANDLING
-    const io = getIO();
-    // updateLastUpdatedField("categoryLastUpdatedAt", io);
-    io.emit("categoryRemoved", deletedCategory._id);
 
     res.status(200).json({ color: deletedCategory, message: `Category ${deletedCategory.name} has been successfully deleted` });
   } catch (err) {
@@ -85,14 +73,8 @@ export const updateCategory = async (req: Request, res: Response, next: NextFunc
   try {
     const { name, stockType } = req.body;
     const { id } = req.params;
-    const updatedCategory = await Category.findByIdAndUpdate(id, { name, stockType }, { new: true });
+    const updatedCategory = await updateCategoryLogic(id, name, stockType);
 
-    // Handle socket update
-    const io = getIO();
-    // updateLastUpdatedField('categoryLastUpdatedAt', io);
-    io.emit("categoryUpdated", updatedCategory);
-
-    // Send a response
     res.status(200).json({
       category: updatedCategory,
       message: `Category saved successfully as ${name}`,

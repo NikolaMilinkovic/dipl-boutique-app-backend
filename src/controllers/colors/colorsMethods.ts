@@ -8,12 +8,18 @@ export interface AddColorInput {
   name: string;
 }
 
-// GET COLORS
+/**
+ * Fetches all colors from the database
+ * @returns Color[]
+ */
 export async function getColorsLogic(): Promise<IColor[]> {
   return await Color.find();
 }
 
-// ADD COLOR
+/**
+ * Adds a new color in the database
+ * @param param0 {colorCode string, name: string}
+ */
 export async function addColorLogic({ colorCode, name }: AddColorInput) {
   const newColor = new Color({
     colorCode: colorCode ?? "#68e823",
@@ -27,7 +33,11 @@ export async function addColorLogic({ colorCode, name }: AddColorInput) {
   return { color: newColor, message: `${name} color successfully added` };
 }
 
-// DELETE COLOR
+/**
+ * Deletes a color in the database via ID
+ * @param id string
+ * @returns Deleted Color
+ */
 export async function deleteColorLogic(id: string) {
   const deleted = await Color.findByIdAndDelete(id);
   const io = getIO();
@@ -35,7 +45,13 @@ export async function deleteColorLogic(id: string) {
   return deleted;
 }
 
-// UPDATE COLOR
+/**
+ * Updates the color in the database via ID
+ * @param id string
+ * @param colorCode string
+ * @param name string
+ * @returns Updated Color
+ */
 export async function updateColorLogic(id: string, colorCode: string, name: string) {
   const updatedColor = await Color.findByIdAndUpdate(id, { colorCode, name }, { new: true });
   const io = getIO();
@@ -44,6 +60,10 @@ export async function updateColorLogic(id: string, colorCode: string, name: stri
   return updatedColor;
 }
 
+/**
+ * Returns an array of categories method descritpions for agentic AI to use
+ * @returns methodDescriptions[]
+ */
 export function colorsMethodsDescriptionArr() {
   const desc = [
     // ADD COLOR

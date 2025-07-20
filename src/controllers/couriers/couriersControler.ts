@@ -5,15 +5,16 @@
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 import { NextFunction, Request, Response } from "express";
 
-import Courier from "../schemas/courier.js";
-import { getIO } from "../socket/initSocket.js";
-import CustomError from "../utils/CustomError.js";
-import { betterErrorLog } from "../utils/logMethods.js";
+import Courier from "../../schemas/courier.js";
+import { getIO } from "../../socket/initSocket.js";
+import CustomError from "../../utils/CustomError.js";
+import { betterErrorLog } from "../../utils/logMethods.js";
+import { addCourierLogic, deleteCourierLogic, getCouriersLogic, updateCourierLogic } from "./couriersMethods.js";
 
 // GET ALL COURIERS
 export const getCouriers = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const couriers = await Courier.find();
+    const couriers = await getCouriersLogic();
     res.status(200).json(couriers);
   } catch (error) {
     betterErrorLog("> Error getting all couriers:", error);
@@ -26,15 +27,7 @@ export const getCouriers = async (req: Request, res: Response, next: NextFunctio
 export const addCourier = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { deliveryPrice, name } = req.body;
-    const newCourier = new Courier({
-      deliveryPrice: deliveryPrice,
-      name: name,
-    });
-
-    await newCourier.save();
-    const io = getIO();
-    // await updateLastUpdatedField("courierLastUpdatedAt", io);
-    io.emit("courierAdded", newCourier);
+    const newCourier = await addCourierLogic(name, deliveryPrice);
 
     res.status(200).json({ courier: newCourier, message: `Courier ${name} has been successfully added` });
   } catch (err) {
@@ -55,14 +48,7 @@ export const updateCourier = async (req: Request, res: Response, next: NextFunct
   try {
     const { deliveryPrice, name } = req.body;
     const { id } = req.params;
-    console.log(deliveryPrice, name);
-    const updatedCourier = await Courier.findByIdAndUpdate(id, { deliveryPrice, name }, { new: true });
-    console.log(updatedCourier);
-
-    // Handle socket update
-    const io = getIO();
-    // await updateLastUpdatedField("courierLastUpdatedAt", io);
-    io.emit("courierUpdated", updatedCourier);
+    const updatedCourier = await updateCourierLogic(id, name, deliveryPrice);
 
     res.status(200).json({
       courier: updatedCourier,
@@ -81,18 +67,12 @@ export const updateCourier = async (req: Request, res: Response, next: NextFunct
 export const deleteCourier = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const deleterCourier = await Courier.findByIdAndDelete(id);
-    if (!deleterCourier) {
+    const deletedCourier = await deleteCourierLogic(id);
+    if (!deletedCourier) {
       next(new CustomError(`Courier with ID: ${id} was not found`, 404));
       return;
     }
-
-    // SOCKET HANDLING
-    const io = getIO();
-    // await updateLastUpdatedField("courierLastUpdatedAt", io);
-    io.emit("courierRemoved", deleterCourier._id);
-
-    res.status(200).json({ courier: deleterCourier, message: `Courier ${deleterCourier.name} has been successfully deleted` });
+    res.status(200).json({ courier: deletedCourier, message: `Courier ${deletedCourier.name} has been successfully deleted` });
   } catch (err) {
     const error = err as any;
     const statusCode = error.statusCode ?? 500;
