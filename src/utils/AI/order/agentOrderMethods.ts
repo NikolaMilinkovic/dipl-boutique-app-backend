@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import {
@@ -5,6 +6,8 @@ import {
   getProcessedOrdersLogic,
   getUnpackedOrdersLogic,
   getUnprocessedOrdersLogic,
+  removeBatchOrdersById,
+  removeOrderById,
 } from "../../../controllers/orders/orderMethods.js";
 
 export async function agentOrderMethods(name: string, args: any) {
@@ -20,6 +23,12 @@ export async function agentOrderMethods(name: string, args: any) {
   }
   if (name === "get_all_orders") {
     functionResult = await getAllOrdersLogic();
+  }
+  if (name === "remove_order_by_id") {
+    functionResult = await removeOrderById(args.orderId as string);
+  }
+  if (name === "remove_batch_orders_by_id") {
+    functionResult = await removeBatchOrdersById(args.orderIds as string[]);
   }
 
   return functionResult;

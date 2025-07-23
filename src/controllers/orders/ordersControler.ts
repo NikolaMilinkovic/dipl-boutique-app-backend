@@ -15,6 +15,7 @@ import { dressColorStockHandler } from "../../utils/dress/dressMethods.js";
 import { betterErrorLog } from "../../utils/logMethods.js";
 import { purseColorStockHandler } from "../../utils/purse/purseMethods.js";
 import { uploadMediaToS3 } from "../../utils/s3/S3DefaultMethods.js";
+import { removeBatchOrdersById, removeOrderById } from "./orderMethods.js";
 
 interface ParseOrderRequestBody {
   orderData: string;
@@ -82,6 +83,7 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
       typeof processed !== "boolean" ||
       !courier
     ) {
+      console.error("> Nepotpuni podaci za dodavanje porudzbine!");
       next(new CustomError("Nepotpuni podaci za dodavanje nove porudžbine", 404));
       return;
     }
@@ -172,7 +174,7 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
           const updatedItem = await purseColorStockHandler(product.selectedColorId as string, "decrement", 1, next);
           const purse = await PurseModel.findById(product.itemReference);
           if (!purse?.totalStock) {
-            res.status(500).json({ message: "There was an error while updating the purse data" });
+            res.status(500).json({ message: "There was an error while updating the purse data | Total stock issue" });
             return;
           }
           purse.totalStock -= 1;
@@ -195,12 +197,13 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
           purseUpdateData.push(purseData);
         }
       } catch (error) {
+        betterErrorLog("> Error while updating product stock on backend", error);
         console.error(error);
       }
     }
 
-    const stockUpdateData = [...dressUpdateData, ...purseUpdateData];
-    io.emit("handleProductStockDecrease", stockUpdateData);
+    const stockUpdateData = { dresses: dressUpdateData, purses: purseUpdateData };
+    io.emit("batchStockDecrease", stockUpdateData);
 
     res.status(200).json({ message: "Porudžbina uspešno dodata" });
     return;
@@ -209,15 +212,21 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
     const statusCode = error?.statusCode ?? 500;
     betterErrorLog("> Error adding a new order", error);
     next(new CustomError("Došlo je do problema prilikom dodavanja porudžbine", Number(statusCode)));
+    console.error(error);
     return;
   }
 };
 
 export const getOrders = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const processedOrders = await Order.find({ processed: true }).sort({ createdAt: -1 });
-    const unprocessedOrders = await Order.find({ processed: false }).sort({ createdAt: -1 });
-    const unpackedOrders = await Order.find({ packed: false, packedIndicator: false }).sort({ createdAt: -1 });
+    const populateColors = {
+      path: "products.itemReference",
+      populate: { path: "colors" },
+    };
+
+    const processedOrders = await Order.find({ processed: true }).sort({ createdAt: -1 }).populate(populateColors);
+    const unprocessedOrders = await Order.find({ processed: false }).sort({ createdAt: -1 }).populate(populateColors);
+    const unpackedOrders = await Order.find({ packed: false, packedIndicator: false }).sort({ createdAt: -1 }).populate(populateColors);
     const orders = {
       processedOrders,
       unpackedOrders,
@@ -231,5 +240,24 @@ export const getOrders = async (req: Request, res: Response, next: NextFunction)
     betterErrorLog("> Error fetching processed orders:", error);
     next(new CustomError("Došlo je do problema prilikom preuzimanja porudžbina", Number(statusCode)));
     return;
+  }
+};
+
+// DELETE BATCH ORDERS
+export const removeOrdersBatch = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const orderIds: string[] = req.body;
+
+    if (orderIds.length === 1) {
+      await removeOrderById(orderIds[0]);
+    } else if (orderIds.length > 1) {
+      await removeBatchOrdersById(orderIds);
+    }
+
+    res.status(200).json({ message: "Sve izabrane porudžbine su uspešno obrisane" });
+  } catch (error: any) {
+    const statusCode = error.statusCode || 500;
+    betterErrorLog("> Error during batch order delete:", error);
+    next(new CustomError("Došlo je do problema prilikom brisanja porudžbina", Number(statusCode)));
   }
 };

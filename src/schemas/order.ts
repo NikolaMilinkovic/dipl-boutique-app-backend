@@ -81,7 +81,11 @@ const OrderSchema = new Schema<OrderDocument>(
           imageName: { required: true, type: String },
           uri: { required: true, type: String },
         },
-        itemReference: { required: true, type: Schema.Types.ObjectId },
+        itemReference: {
+          refPath: "products.mongoDB_type",
+          required: true,
+          type: Schema.Types.ObjectId,
+        },
         mongoDB_type: {
           enum: ["Dress", "Purse"],
           required: true,
