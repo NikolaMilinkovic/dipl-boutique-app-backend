@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import bcrypt from "bcryptjs";
 
@@ -31,7 +32,7 @@ export async function addUserOnStartup(username: string, plainPassword: string):
     betterErrorLog("> Error creating a user:", error);
   }
 }
-export function compareAndUpdate(oldValue: unknown, newValue: unknown) {
+export function compareAndUpdate(oldValue: unknown, newValue: unknown): any {
   if (typeof oldValue === "object" && typeof newValue === "object") {
     if (!deepEqual(oldValue!, newValue!)) {
       return newValue;

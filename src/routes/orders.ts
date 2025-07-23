@@ -1,7 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import express from "express";
 import multer from "multer";
 
-import { addOrder, getOrders, parseOrder, removeOrdersBatch } from "../controllers/orders//ordersControler.js";
+import { addOrder, getOrders, parseOrder, removeOrdersBatch, updateOrder } from "../controllers/orders//ordersControler.js";
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -10,5 +12,6 @@ router.route("/parse").post(parseOrder);
 router.route("/add").post(upload.single("image"), addOrder);
 router.route("/get").get(getOrders);
 router.route("/remove-orders-batch").delete(removeOrdersBatch);
+router.route("/update/:id").patch(upload.single("profileImage"), updateOrder as any);
 
 export default router;

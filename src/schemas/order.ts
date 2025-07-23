@@ -15,9 +15,7 @@ export interface OrderDocument extends Document {
   products: Product[];
   productsPrice: number;
   reservation: boolean;
-  reservationDate?: Date;
   totalPrice: number;
-  value?: number;
   weight: string;
 }
 
@@ -32,6 +30,7 @@ interface Buyer {
 }
 
 interface Product {
+  _id?: string;
   category: string;
   image: ProfileImage;
   itemReference: Types.ObjectId;
@@ -102,10 +101,7 @@ const OrderSchema = new Schema<OrderDocument>(
     ],
     productsPrice: { required: true, type: Number },
     reservation: { default: false, type: Boolean },
-    reservationDate: { required: false, type: Date },
     totalPrice: { required: true, type: Number },
-    value: { required: false, type: Number },
-    weight: { required: true, type: String },
   },
   { timestamps: true },
 );

@@ -3,11 +3,52 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { NextFunction } from "express";
+import mongoose from "mongoose";
 
 import DressColorModel from "../../schemas/dressColor.js";
 import CustomError from "../CustomError.js";
-import { betterErrorLog } from "../logMethods.js";
+import { betterConsoleLog, betterErrorLog } from "../logMethods.js";
 
+interface DressArrTypes {
+  colorId: string;
+  dressId: string;
+  increment: number;
+  sizeId: string;
+}
+
+/**
+ * @param {Array<Object>} dressesArr - Array of objects with neccessary data for dress update
+ * Each object contains:
+ * - dressId: string
+ * - colorId: string
+ * - sizeId: string
+ * - increment: number
+ * @param {String} operation - can either be increment | decrement
+ * @param {Function} next - callback function for error handling
+ * @returns {Promise} - A promise resolving to the updated stock levels or an error.
+ */
+export async function dressBatchColorStockHandler(dressesArr: DressArrTypes[], operation: string, next: NextFunction) {
+  betterConsoleLog('> Dresses arr', dressesArr);
+  try {
+    const operations = dressesArr.map((item) => ({
+      updateOne: {
+        filter: {
+          _id: new mongoose.Types.ObjectId(String(item.colorId)),
+          "sizes._id": new mongoose.Types.ObjectId(String(item.sizeId)),
+        },
+        update: { $inc: { "sizes.$.stock": operation === "increment" ? item.increment : -item.increment } },
+      },
+    }));
+
+    return await DressColorModel.collection.bulkWrite(operations);
+  } catch (err) {
+    const error = err as any;
+    const statusCode = error.statusCode ?? 500;
+    betterErrorLog("> Error updating purse batch stock:", error);
+    next(new CustomError("Došlo je do problema prilikom ažuriranja stanja artikala", Number(statusCode)));
+    return;
+  }
+}
 export async function dressColorStockHandler(colorId: string, sizeId: string, operation: string, value = 1, next: NextFunction) {
   try {
     const dressColor = await DressColorModel.findById(colorId);
