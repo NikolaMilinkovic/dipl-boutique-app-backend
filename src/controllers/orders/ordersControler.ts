@@ -139,8 +139,16 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
 
     const newOrder = await order.save();
 
+    const populatedOrder = await Order.findById(newOrder._id)
+    .populate({
+      path: 'products.itemReference',
+      populate: { path: 'colors' }
+    })
+    .exec();
+
+
     const io = getIO();
-    io.emit("orderAdded", newOrder);
+    io.emit("orderAdded", populatedOrder);
     const dressUpdateData = [];
     const purseUpdateData = [];
 
@@ -369,18 +377,20 @@ export const updateOrder = async (req: Request, res: Response, next: NextFunctio
     order.internalRemark = compareAndUpdate(order.internalRemark, internalRemark);
     order.deliveryRemark = compareAndUpdate(order.deliveryRemark, deliveryRemark);
 
-
-    console.log('logging req.file')
-    console.log(req.file);
     if (req.file) {
-      console.log('> FILE FOUND S3 RUNNING');
       await deleteMediaFromS3("images/profiles/", order.buyer.profileImage.imageName);
       const image = await uploadMediaToS3("images/profiles/", req.file, next);
       if (image) order.buyer.profileImage = image;
     }
 
     const updatedOrder = await order.save();
-    io.emit("orderUpdated", updatedOrder);
+    const populatedOrder = await Order.findById(updatedOrder._id)
+      .populate({
+        path: 'products.itemReference',
+        populate: { path: 'colors' }
+      })
+    .exec();
+    io.emit("orderUpdated", populatedOrder);
     res.status(200).json({ message: "Porudžbina uspešno ažurirana" });
   } catch (err) {
     const error = err as any;
