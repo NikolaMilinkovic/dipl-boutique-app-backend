@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-template-expression */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
@@ -119,7 +120,7 @@ export function ordersMethodsDescriptionArr() {
     },
     {
       description:
-        "PACKS THE ORDER. Marks the order with the given ID as packed by setting 'packedIndicator' to true. Emits a socket event 'setStockIndicatorToTrue'.",
+        "PACKS THE ORDER. Marks the order with the given ID as packed by setting 'packedIndicator' to true. Emits a socket event 'setStockIndicatorToTrue'. Returns true if successfull or false if failed",
       name: "set_indicator_to_true",
       parameters: {
         properties: {
@@ -134,7 +135,7 @@ export function ordersMethodsDescriptionArr() {
     },
     {
       description:
-        "UNPACKS THE ORDER. Marks the order with the given ID as unpacked by setting 'packedIndicator' to false. Emits a socket event 'setStockIndicatorToFalse'.",
+        "UNPACKS THE ORDER. Marks the order with the given ID as unpacked by setting 'packedIndicator' to false. Emits a socket event 'setStockIndicatorToFalse'. Returns true if successfull or false if failed",
       name: "set_indicator_to_false",
       parameters: {
         properties: {
@@ -144,6 +145,22 @@ export function ordersMethodsDescriptionArr() {
           },
         },
         required: ["id"],
+        type: "object",
+      },
+    },
+    {
+      description:
+        "PACKS MULTIPLE ORDERS. Accepts an array of order IDs and marks each corresponding order as packed by setting 'packed' to true. Emits a real-time socket event 'packOrdersByIds' with the affected IDs. Returns true if successfull or false if failed",
+      name: "pack_orders_by_ids",
+      parameters: {
+        properties: {
+          packedIds: {
+            description: "Array of unique order IDs to mark as packed.",
+            items: { type: "string" },
+            type: "array",
+          },
+        },
+        required: ["packedIds"],
         type: "object",
       },
     },
@@ -424,6 +441,25 @@ export async function setOrderPackedIndicatorToFalseLogic(id: string): Promise<b
     await Order.findByIdAndUpdate(id, { packedIndicator: false });
     const io = getIO();
     io.emit("setStockIndicatorToFalse", id);
+    return true;
+  } catch (err) {
+    const error = err as any;
+    betterErrorLog("Error while setting indicator to false", error);
+    return false;
+  }
+}
+
+export async function packOrdersByIdsLogic(packedIds: string[]) {
+  try {
+    const operations = packedIds.map((id: string) => ({
+      updateOne: {
+        filter: { _id: new mongoose.Types.ObjectId(`${id}`) },
+        update: { $set: { packed: true } },
+      },
+    }));
+    await Order.collection.bulkWrite(operations);
+    const io = getIO();
+    io.emit("packOrdersByIds", packedIds);
     return true;
   } catch (err) {
     const error = err as any;

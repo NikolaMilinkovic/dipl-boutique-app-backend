@@ -6,6 +6,7 @@ import {
   getProcessedOrdersLogic,
   getUnpackedOrdersLogic,
   getUnprocessedOrdersLogic,
+  packOrdersByIdsLogic,
   removeBatchOrdersById,
   removeOrderById,
   setOrderPackedIndicatorToFalseLogic,
@@ -37,6 +38,9 @@ export async function agentOrderMethods(name: string, args: any) {
   }
   if (name === "set_indicator_to_false") {
     functionResult = await setOrderPackedIndicatorToFalseLogic(args.id as string);
+  }
+  if (name === "pack_orders_by_ids") {
+    functionResult = await packOrdersByIdsLogic(args.packedIds as string[]);
   }
 
   return functionResult;

@@ -1,3 +1,4 @@
+// prettier-ignore-file
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unused-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
@@ -7,6 +8,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NextFunction, Request, Response } from "express";
+import mongoose from "mongoose";
 
 import { ProductTypes } from "../../global/types.js";
 import DressModel from "../../schemas/dress.js";
@@ -20,7 +22,13 @@ import { compareAndUpdate } from "../../utils/helperMethods.js";
 import { betterErrorLog } from "../../utils/logMethods.js";
 import { purseBatchColorStockHandler, purseColorStockHandler } from "../../utils/purse/purseMethods.js";
 import { deleteMediaFromS3, uploadMediaToS3 } from "../../utils/s3/S3DefaultMethods.js";
-import { removeBatchOrdersById, removeOrderById, setOrderPackedIndicatorToFalseLogic, setOrderPackedIndicatorToTrueLogic } from "./orderMethods.js";
+import {
+  packOrdersByIdsLogic,
+  removeBatchOrdersById,
+  removeOrderById,
+  setOrderPackedIndicatorToFalseLogic,
+  setOrderPackedIndicatorToTrueLogic,
+} from "./orderMethods.js";
 
 interface ParseOrderRequestBody {
   orderData: string;
@@ -462,6 +470,20 @@ export const setIndicatorToFalse = async (req: Request, res: Response, next: Nex
     const statusCode = error.statusCode ?? 500;
     betterErrorLog("> Error while updating package indicator to false", error);
     next(new CustomError("There was an error while packing the order", Number(statusCode)));
+    return;
+  }
+};
+
+export const packOrdersByIds = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { packedIds } = req.body;
+    await packOrdersByIdsLogic(packedIds);
+    res.status(200).json({ message: "Porudžbine uspešno spakovane" });
+  } catch (err) {
+    const error = err as any;
+    const statusCode = error.statusCode ?? 500;
+    betterErrorLog("> Error while packing orders by ID's", error);
+    next(new CustomError("Došlo je do problema prilikom ažuriranja stanja pakovanja porudžbine", Number(statusCode)));
     return;
   }
 };
