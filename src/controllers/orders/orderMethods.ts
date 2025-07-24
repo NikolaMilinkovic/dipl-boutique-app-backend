@@ -119,7 +119,7 @@ export function ordersMethodsDescriptionArr() {
     },
     {
       description:
-        "Marks the order with the given ID as packed by setting 'packedIndicator' to true. Emits a socket event 'setStockIndicatorToTrue'.",
+        "PACKS THE ORDER. Marks the order with the given ID as packed by setting 'packedIndicator' to true. Emits a socket event 'setStockIndicatorToTrue'.",
       name: "set_indicator_to_true",
       parameters: {
         properties: {
@@ -134,7 +134,7 @@ export function ordersMethodsDescriptionArr() {
     },
     {
       description:
-        "Marks the order with the given ID as unpacked by setting 'packedIndicator' to false. Emits a socket event 'setStockIndicatorToFalse'.",
+        "UNPACKS THE ORDER. Marks the order with the given ID as unpacked by setting 'packedIndicator' to false. Emits a socket event 'setStockIndicatorToFalse'.",
       name: "set_indicator_to_false",
       parameters: {
         properties: {
@@ -407,7 +407,7 @@ export async function removeBatchOrdersById(orderIds: string[]) {
   }
 }
 
-export async function setIndicatorToTrueLogic(id: string): Promise<boolean> {
+export async function setOrderPackedIndicatorToTrueLogic(id: string): Promise<boolean> {
   try {
     await Order.findByIdAndUpdate(id, { packedIndicator: true });
     const io = getIO();
@@ -419,7 +419,7 @@ export async function setIndicatorToTrueLogic(id: string): Promise<boolean> {
     return false;
   }
 }
-export async function setIndicatorToFalseLogic(id: string): Promise<boolean> {
+export async function setOrderPackedIndicatorToFalseLogic(id: string): Promise<boolean> {
   try {
     await Order.findByIdAndUpdate(id, { packedIndicator: false });
     const io = getIO();

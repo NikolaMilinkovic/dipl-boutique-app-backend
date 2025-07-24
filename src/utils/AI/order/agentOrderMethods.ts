@@ -8,8 +8,8 @@ import {
   getUnprocessedOrdersLogic,
   removeBatchOrdersById,
   removeOrderById,
-  setIndicatorToFalseLogic,
-  setIndicatorToTrueLogic,
+  setOrderPackedIndicatorToFalseLogic,
+  setOrderPackedIndicatorToTrueLogic,
 } from "../../../controllers/orders/orderMethods.js";
 
 export async function agentOrderMethods(name: string, args: any) {
@@ -33,10 +33,10 @@ export async function agentOrderMethods(name: string, args: any) {
     functionResult = await removeBatchOrdersById(args.orderIds as string[]);
   }
   if (name === "set_indicator_to_true") {
-    functionResult = await setIndicatorToTrueLogic(args.id as string);
+    functionResult = await setOrderPackedIndicatorToTrueLogic(args.id as string);
   }
   if (name === "set_indicator_to_false") {
-    functionResult = await setIndicatorToFalseLogic(args.id as string);
+    functionResult = await setOrderPackedIndicatorToFalseLogic(args.id as string);
   }
 
   return functionResult;

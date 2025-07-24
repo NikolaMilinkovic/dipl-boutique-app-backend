@@ -20,7 +20,7 @@ import { compareAndUpdate } from "../../utils/helperMethods.js";
 import { betterErrorLog } from "../../utils/logMethods.js";
 import { purseBatchColorStockHandler, purseColorStockHandler } from "../../utils/purse/purseMethods.js";
 import { deleteMediaFromS3, uploadMediaToS3 } from "../../utils/s3/S3DefaultMethods.js";
-import { removeBatchOrdersById, removeOrderById, setIndicatorToFalseLogic, setIndicatorToTrueLogic } from "./orderMethods.js";
+import { removeBatchOrdersById, removeOrderById, setOrderPackedIndicatorToFalseLogic, setOrderPackedIndicatorToTrueLogic } from "./orderMethods.js";
 
 interface ParseOrderRequestBody {
   orderData: string;
@@ -437,7 +437,7 @@ function getPurseIncrementData(item: any) {
 export const setIndicatorToTrue = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const result = await setIndicatorToTrueLogic(id);
+    const result = await setOrderPackedIndicatorToTrueLogic(id);
     if (!result) next(new CustomError("There was an error while packing the order", 500));
 
     res.status(200).json({ message: "Success" });
@@ -453,7 +453,7 @@ export const setIndicatorToTrue = async (req: Request, res: Response, next: Next
 export const setIndicatorToFalse = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const result = await setIndicatorToFalseLogic(id);
+    const result = await setOrderPackedIndicatorToFalseLogic(id);
     if (!result) next(new CustomError("There was an error while packing the order", 500));
 
     res.status(200).json({ message: "Success" });
