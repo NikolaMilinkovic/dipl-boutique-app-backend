@@ -20,7 +20,7 @@ import { compareAndUpdate } from "../../utils/helperMethods.js";
 import { betterErrorLog } from "../../utils/logMethods.js";
 import { purseBatchColorStockHandler, purseColorStockHandler } from "../../utils/purse/purseMethods.js";
 import { deleteMediaFromS3, uploadMediaToS3 } from "../../utils/s3/S3DefaultMethods.js";
-import { removeBatchOrdersById, removeOrderById } from "./orderMethods.js";
+import { removeBatchOrdersById, removeOrderById, setIndicatorToFalseLogic, setIndicatorToTrueLogic } from "./orderMethods.js";
 
 interface ParseOrderRequestBody {
   orderData: string;
@@ -140,12 +140,11 @@ export const addOrder = async (req: Request<unknown, unknown>, res: Response, ne
     const newOrder = await order.save();
 
     const populatedOrder = await Order.findById(newOrder._id)
-    .populate({
-      path: 'products.itemReference',
-      populate: { path: 'colors' }
-    })
-    .exec();
-
+      .populate({
+        path: "products.itemReference",
+        populate: { path: "colors" },
+      })
+      .exec();
 
     const io = getIO();
     io.emit("orderAdded", populatedOrder);
@@ -386,10 +385,10 @@ export const updateOrder = async (req: Request, res: Response, next: NextFunctio
     const updatedOrder = await order.save();
     const populatedOrder = await Order.findById(updatedOrder._id)
       .populate({
-        path: 'products.itemReference',
-        populate: { path: 'colors' }
+        path: "products.itemReference",
+        populate: { path: "colors" },
       })
-    .exec();
+      .exec();
     io.emit("orderUpdated", populatedOrder);
     res.status(200).json({ message: "Porudžbina uspešno ažurirana" });
   } catch (err) {
@@ -438,31 +437,31 @@ function getPurseIncrementData(item: any) {
 export const setIndicatorToTrue = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    await Order.findByIdAndUpdate(id, { packedIndicator: true });
-    const io = getIO();
-    io.emit('setStockIndicatorToTrue', id);
+    const result = await setIndicatorToTrueLogic(id);
+    if (!result) next(new CustomError("There was an error while packing the order", 500));
 
-    res.status(200).json({ message: 'Success' });
+    res.status(200).json({ message: "Success" });
   } catch (err) {
     const error = err as any;
     const statusCode = error.statusCode ?? 500;
-    betterErrorLog('> Error while updating package indicator to true', error);
-    next(new CustomError('There was an error while packing the order', Number(statusCode))); return;
+    betterErrorLog("> Error while updating package indicator to true", error);
+    next(new CustomError("There was an error while packing the order", Number(statusCode)));
+    return;
   }
 };
 
 export const setIndicatorToFalse = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    await Order.findByIdAndUpdate(id, { packedIndicator: false });
-    const io = getIO();
-    io.emit('setStockIndicatorToFalse', id);
+    const result = await setIndicatorToFalseLogic(id);
+    if (!result) next(new CustomError("There was an error while packing the order", 500));
 
-    res.status(200).json({ message: 'Success' });
+    res.status(200).json({ message: "Success" });
   } catch (err) {
     const error = err as any;
     const statusCode = error.statusCode ?? 500;
-    betterErrorLog('> Error while updating package indicator to false', error);
-    next(new CustomError('There was an error while packing the order', Number(statusCode))); return;
+    betterErrorLog("> Error while updating package indicator to false", error);
+    next(new CustomError("There was an error while packing the order", Number(statusCode)));
+    return;
   }
 };

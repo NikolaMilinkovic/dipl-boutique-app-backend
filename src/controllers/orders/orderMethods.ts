@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/restrict-plus-operands */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 
@@ -112,6 +114,36 @@ export function ordersMethodsDescriptionArr() {
           },
         },
         required: ["orderIds"],
+        type: "object",
+      },
+    },
+    {
+      description:
+        "Marks the order with the given ID as packed by setting 'packedIndicator' to true. Emits a socket event 'setStockIndicatorToTrue'.",
+      name: "set_indicator_to_true",
+      parameters: {
+        properties: {
+          id: {
+            description: "The ID of the order to update.",
+            type: "string",
+          },
+        },
+        required: ["id"],
+        type: "object",
+      },
+    },
+    {
+      description:
+        "Marks the order with the given ID as unpacked by setting 'packedIndicator' to false. Emits a socket event 'setStockIndicatorToFalse'.",
+      name: "set_indicator_to_false",
+      parameters: {
+        properties: {
+          id: {
+            description: "The ID of the order to update.",
+            type: "string",
+          },
+        },
+        required: ["id"],
         type: "object",
       },
     },
@@ -372,5 +404,30 @@ export async function removeBatchOrdersById(orderIds: string[]) {
   } finally {
     // End the session
     await session.endSession();
+  }
+}
+
+export async function setIndicatorToTrueLogic(id: string): Promise<boolean> {
+  try {
+    await Order.findByIdAndUpdate(id, { packedIndicator: true });
+    const io = getIO();
+    io.emit("setStockIndicatorToTrue", id);
+    return true;
+  } catch (err) {
+    const error = err as any;
+    betterErrorLog("Error while setting indicator to true", error);
+    return false;
+  }
+}
+export async function setIndicatorToFalseLogic(id: string): Promise<boolean> {
+  try {
+    await Order.findByIdAndUpdate(id, { packedIndicator: false });
+    const io = getIO();
+    io.emit("setStockIndicatorToFalse", id);
+    return true;
+  } catch (err) {
+    const error = err as any;
+    betterErrorLog("Error while setting indicator to false", error);
+    return false;
   }
 }
