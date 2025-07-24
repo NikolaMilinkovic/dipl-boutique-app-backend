@@ -454,7 +454,7 @@ export async function packOrdersByIdsLogic(packedIds: string[]) {
     const operations = packedIds.map((id: string) => ({
       updateOne: {
         filter: { _id: new mongoose.Types.ObjectId(`${id}`) },
-        update: { $set: { packed: true } },
+        update: { $set: { packed: true, packedIndicator: true } },
       },
     }));
     await Order.collection.bulkWrite(operations);

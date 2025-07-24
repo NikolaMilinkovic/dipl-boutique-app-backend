@@ -8,7 +8,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { NextFunction, Request, Response } from "express";
-import mongoose from "mongoose";
 
 import { ProductTypes } from "../../global/types.js";
 import DressModel from "../../schemas/dress.js";
