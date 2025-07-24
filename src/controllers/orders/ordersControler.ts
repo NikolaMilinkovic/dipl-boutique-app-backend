@@ -434,3 +434,35 @@ function getPurseIncrementData(item: any) {
     purseId: item.itemReference._id.toString(),
   };
 }
+
+export const setIndicatorToTrue = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    await Order.findByIdAndUpdate(id, { packedIndicator: true });
+    const io = getIO();
+    io.emit('setStockIndicatorToTrue', id);
+
+    res.status(200).json({ message: 'Success' });
+  } catch (err) {
+    const error = err as any;
+    const statusCode = error.statusCode ?? 500;
+    betterErrorLog('> Error while updating package indicator to true', error);
+    next(new CustomError('There was an error while packing the order', Number(statusCode))); return;
+  }
+};
+
+export const setIndicatorToFalse = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { id } = req.params;
+    await Order.findByIdAndUpdate(id, { packedIndicator: false });
+    const io = getIO();
+    io.emit('setStockIndicatorToFalse', id);
+
+    res.status(200).json({ message: 'Success' });
+  } catch (err) {
+    const error = err as any;
+    const statusCode = error.statusCode ?? 500;
+    betterErrorLog('> Error while updating package indicator to false', error);
+    next(new CustomError('There was an error while packing the order', Number(statusCode))); return;
+  }
+};
