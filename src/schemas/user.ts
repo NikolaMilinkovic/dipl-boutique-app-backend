@@ -19,7 +19,6 @@ interface CRUD_PermissionTypes {
   add: string;
   edit: string;
   remove: string;
-  update: string;
 }
 
 interface PermissionTypes {
@@ -43,31 +42,37 @@ const UserSchema = new Schema<UserTypes>(
           add: true,
           edit: true,
           remove: true,
-          update: true,
         },
         color: {
           add: true,
           edit: true,
           remove: true,
-          update: true,
         },
         courier: {
           add: true,
           edit: true,
           remove: true,
-          update: true,
+        },
+        order: {
+          add: true,
+          edit: true,
+          remove: true,
+        },
+        product: {
+          add: true,
+          edit: true,
+          remove: true,
         },
         supplier: {
           add: true,
           edit: true,
           remove: true,
-          update: true,
         },
       }),
       type: Object,
     },
     role: {
-      default: "admin",
+      default: "user",
       required: true,
       type: String,
     },

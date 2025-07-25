@@ -32,6 +32,7 @@ export async function addUserOnStartup(username: string, plainPassword: string):
     betterErrorLog("> Error creating a user:", error);
   }
 }
+
 export function compareAndUpdate(oldValue: unknown, newValue: unknown): any {
   if (typeof oldValue === "object" && typeof newValue === "object") {
     if (!deepEqual(oldValue!, newValue!)) {

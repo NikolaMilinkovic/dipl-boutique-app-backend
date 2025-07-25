@@ -47,7 +47,7 @@ database.once("open", () => {
 database.on("error", console.error.bind(console, "> MongoDB connection error"));
 // ===========================[ \MongoDB connection ]=========================== //
 
-// import { addUserOnStartup } from "../utils/helperMethods.js";
+// import { addUserOnStartup } from "../src/utils/helperMethods.js";
 // await addUserOnStartup("helvos", "helvos");
 
 import authModuleFactory, { AuthModule } from "./middleware/authMiddleware.js";
@@ -80,6 +80,9 @@ app.use("/product", productsRouter);
 
 import ordersRouter from "./routes/orders.js";
 app.use("/orders", ordersRouter);
+
+import usersRouter from "./routes/user.js";
+app.use("/user", usersRouter);
 
 // =====================[ ERROR HANDLERS ]======================
 import errorHandler from "./controllers/errorControler.js";

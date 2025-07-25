@@ -6,8 +6,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { NextFunction, Request, Response } from "express";
 
-import Supplier from "../../schemas/supplier.js";
-import { getIO } from "../../socket/initSocket.js";
 import CustomError from "../../utils/CustomError.js";
 import { betterErrorLog } from "../../utils/logMethods.js";
 import { addSupplierLogic, deleteSupplierLogic, getSuppliersLogic, updateSupplierLogic } from "./supplierMethods.js";
