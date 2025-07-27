@@ -4,7 +4,7 @@ import mongoose, { Document, Model, Schema } from "mongoose";
 export interface UserTypes extends Document {
   _id: ObjectId;
   password: string;
-  permissions?: PermissionTypes;
+  permissions: PermissionTypes;
   role: string;
   settings?: {
     defaults: {
