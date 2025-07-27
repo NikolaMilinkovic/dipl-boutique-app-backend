@@ -1,10 +1,10 @@
 import express from "express";
 
-import { createUser } from "../controllers/users/userControler.js";
+import { createUser, fetchUsers } from "../controllers/users/userControler.js";
 
 const router = express.Router();
 
-// router.route("/get").get(getSuppliers);
+router.route("/get-all").post(fetchUsers);
 router.route("/create").post(createUser);
 // router.route("/:id").delete(deleteSupplier).patch(updateSupplier);
 
