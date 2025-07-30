@@ -1,8 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import express from "express";
 import multer from "multer";
 
 // /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { addProduct, deleteProduct, getProducts, updateProduct } from "../controllers/products/productControler.js";
+import { checkPermission } from "../utils/helperMethods.js";
 
 // import {
 //   addDress,
@@ -20,10 +23,10 @@ import { addProduct, deleteProduct, getProducts, updateProduct } from "../contro
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.route("/add").post(upload.single("image"), addProduct);
+router.route("/add").post(checkPermission("product", "add") as any, upload.single("image"), addProduct);
 router.route("/get-all-products").get(getProducts);
-router.route("/delete").delete(deleteProduct);
-router.route("/update").patch(upload.single("image"), updateProduct);
+router.route("/delete").delete(checkPermission("product", "remove") as any, deleteProduct);
+router.route("/update").patch(checkPermission("product", "edit") as any, upload.single("image"), updateProduct);
 
 // router.route("/delete-item-batch").delete(removeProductBatch);
 
