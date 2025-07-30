@@ -11,7 +11,6 @@ import { couriersMethodsDescriptionArr } from "../../controllers/couriers/courie
 import { ordersMethodsDescriptionArr } from "../../controllers/orders/orderMethods.js";
 import { productsMethodsDescriptionArr } from "../../controllers/products/productMethods.js";
 import { suppliersMethodsDescriptionArr } from "../../controllers/suppliers/supplierMethods.js";
-import { UserTypes } from "../../schemas/user.js";
 import { betterConsoleLog } from "../logMethods.js";
 import { agentCategoryMethods } from "./category/agentCategoryMethods.js";
 import { agentColorMethods } from "./color/agentColorMethods.js";

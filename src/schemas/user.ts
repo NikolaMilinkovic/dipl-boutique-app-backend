@@ -69,7 +69,7 @@ const UserSchema = new Schema<UserTypes>(
           remove: true,
         },
       }),
-      type: Object,
+      type: Schema.Types.Mixed,
     },
     role: {
       default: "user",
