@@ -1,7 +1,12 @@
+/* eslint-disable @typescript-eslint/prefer-promise-reject-errors */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-confusing-void-expression */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import bcrypt from "bcryptjs";
+import ffmpeg from "fluent-ffmpeg";
+import { PassThrough } from "stream";
 
 import User, { UserTypes } from "../schemas/user.js";
 import { betterErrorLog } from "./logMethods.js";
@@ -61,6 +66,26 @@ export function compareAndUpdate(oldValue: unknown, newValue: unknown): any {
     return newValue;
   }
   return oldValue;
+}
+
+export function convertAudioBufferToWav(inputBuffer: Buffer): Promise<Buffer> {
+  return new Promise((resolve, reject) => {
+    const inputStream = new PassThrough();
+    inputStream.end(inputBuffer);
+
+    const outputChunks: Buffer[] = [];
+    const outputStream = new PassThrough();
+
+    outputStream.on("data", (chunk) => outputChunks.push(chunk));
+    outputStream.on("end", () => resolve(Buffer.concat(outputChunks)));
+    outputStream.on("error", (err) => reject(err));
+
+    ffmpeg(inputStream)
+      .format("wav")
+      .audioChannels(1)
+      .on("error", (err) => reject(err))
+      .pipe(outputStream, { end: true });
+  });
 }
 
 function deepEqual(obj1: object, obj2: object) {

@@ -82,7 +82,7 @@ export const addProduct = async (req: Request<unknown, unknown, AddProductReques
     if (product.stockType === "Boja-Veličina-Količina") {
       await addDress(product, colorsArray, image, next);
     }
-    res.status(200).json({ message: `Proizvod ${product.name} je uspešno dodat` });
+    res.status(200).json({ message: `Product ${product.name} has been successfully added` });
   } catch (err) {
     const error = err as any;
     const statusCode = error?.statusCode ?? 500;

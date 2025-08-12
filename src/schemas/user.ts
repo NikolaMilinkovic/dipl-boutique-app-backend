@@ -6,12 +6,6 @@ export interface UserTypes extends Document {
   password: string;
   permissions: PermissionTypes;
   role: string;
-  settings?: {
-    defaults: {
-      courier?: string;
-      listProductsBy?: string;
-    };
-  };
   username: string;
 }
 
@@ -75,15 +69,6 @@ const UserSchema = new Schema<UserTypes>(
       default: "user",
       required: true,
       type: String,
-    },
-    settings: {
-      default: () => ({
-        defaults: {
-          courier: "",
-          listProductsBy: "category",
-        },
-      }),
-      type: Object,
     },
     username: {
       required: [true, "Please enter a valid username"],

@@ -60,9 +60,9 @@ import agentRouter from "./routes/agent.js";
 app.use("/agent", agentRouter);
 // =====================[ \UNPROTECTED ROUTES ]====================
 
-// =====================[ PROTECTED ROUTERS ]======================
 app.use(authModule.authenticateJWT);
 
+// =====================[ PROTECTED ROUTERS ]======================
 import colorsRouter from "./routes/colors.js";
 app.use("/colors", colorsRouter);
 

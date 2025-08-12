@@ -50,7 +50,7 @@ function randomImageName(bytes = 32): string {
   return crypto.randomBytes(bytes).toString("hex");
 }
 
-function resizeImage(buffer: Buffer, x = 1080, y = 1920): Promise<Buffer> {
+function resizeImage(buffer: Buffer, x = 480, y = 640): Promise<Buffer> {
   return sharp(buffer).resize({ fit: "contain", height: y, width: x }).toBuffer();
 }
 

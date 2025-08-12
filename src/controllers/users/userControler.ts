@@ -9,7 +9,7 @@ import User, { UserTypes } from "../../schemas/user.js";
 import { getIO } from "../../socket/initSocket.js";
 import CustomError from "../../utils/CustomError.js";
 import { compareAndUpdate } from "../../utils/helperMethods.js";
-import { betterConsoleLog, betterErrorLog } from "../../utils/logMethods.js";
+import { betterErrorLog } from "../../utils/logMethods.js";
 import { createUserLogic, NewUserTypes } from "./userMethods.js";
 
 // GET ALL SUPPLIERS
