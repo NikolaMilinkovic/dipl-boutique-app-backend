@@ -11,6 +11,7 @@ import { couriersMethodsDescriptionArr } from "../../controllers/couriers/courie
 import { ordersMethodsDescriptionArr } from "../../controllers/orders/orderMethods.js";
 import { productsMethodsDescriptionArr } from "../../controllers/products/productMethods.js";
 import { suppliersMethodsDescriptionArr } from "../../controllers/suppliers/supplierMethods.js";
+import { UserTypes } from "../../schemas/user.js";
 import { betterConsoleLog } from "../logMethods.js";
 import { agentCategoryMethods } from "./category/agentCategoryMethods.js";
 import { agentColorMethods } from "./color/agentColorMethods.js";
@@ -31,7 +32,7 @@ interface AgentResponse {
   message: AgentMessage;
 }
 
-export async function handleAgentMessages(messages: AgentMessage[]): Promise<AgentResponse> {
+export async function handleAgentMessages(messages: AgentMessage[], user: UserTypes): Promise<AgentResponse> {
   try {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
@@ -39,17 +40,17 @@ export async function handleAgentMessages(messages: AgentMessage[]): Promise<Age
       project: process.env.PROJECT_ID,
     });
 
-    const colorFunctions = colorsMethodsDescriptionArr();
-    const categoryFunctions = categoriesMethodsDescriptionArr();
-    const supplierFunctions = suppliersMethodsDescriptionArr();
-    const courierFunctions = couriersMethodsDescriptionArr();
-    const orderFunctions = ordersMethodsDescriptionArr();
+    const colorFunctions = colorsMethodsDescriptionArr(user.permissions.color);
+    const categoryFunctions = categoriesMethodsDescriptionArr(user.permissions.category);
+    const supplierFunctions = suppliersMethodsDescriptionArr(user.permissions.supplier);
+    const courierFunctions = couriersMethodsDescriptionArr(user.permissions.courier);
+    const orderFunctions = ordersMethodsDescriptionArr(user.permissions.order);
     const productFunctions = productsMethodsDescriptionArr();
     const functions = [...colorFunctions, ...categoryFunctions, ...supplierFunctions, ...courierFunctions, ...orderFunctions, ...productFunctions];
 
     const systemMessage: AgentMessage = {
       content:
-        "You are Infi, a versatile AI agent that assists users by answering questions and calling backend functions. Keep answers short and concise.",
+        "You are Infi, a versatile AI agent that assists users by answering questions and calling backend functions. Keep answers short and concise. If there is no method for executing a command it is either due to that method not existing or the user doesnt have the permission to execute that command. Respond by informing the user that you can not execute that command and inform him that he might not have permissions to execute that command.",
       role: "system",
     };
 

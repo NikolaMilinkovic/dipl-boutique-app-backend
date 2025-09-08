@@ -1,6 +1,8 @@
 /* eslint-disable perfectionist/sort-objects */
 /* eslint-disable perfectionist/sort-modules */
+import { MethodDesc, Permission } from "../../global/types.js";
 import Color, { IColor } from "../../schemas/color.js";
+import { CRUD_PermissionTypes } from "../../schemas/user.js";
 import { getIO } from "../../socket/initSocket.js";
 
 export interface AddColorInput {
@@ -64,10 +66,22 @@ export async function updateColorLogic(id: string, colorCode: string, name: stri
  * Returns an array of categories method descritpions for agentic AI to use
  * @returns methodDescriptions[]
  */
-export function colorsMethodsDescriptionArr() {
+export function colorsMethodsDescriptionArr(permission: CRUD_PermissionTypes) {
   const desc = [
-    // ADD COLOR
+    // GET COLORS
     {
+      description: "Fetches all colors from the database.",
+      name: "get_colors",
+      parameters: {
+        properties: {},
+        type: "object",
+      },
+    },
+  ] as MethodDesc[];
+
+  // ADD COLOR
+  if (permission.add) {
+    desc.push({
       description: "Add a new color to the boutique",
       name: "add_color",
       parameters: {
@@ -84,36 +98,12 @@ export function colorsMethodsDescriptionArr() {
         required: ["name"],
         type: "object",
       },
-    },
+    });
+  }
 
-    // GET COLORS
-    {
-      description: "Fetches all colors from the database.",
-      name: "get_colors",
-      parameters: {
-        properties: {},
-        type: "object",
-      },
-    },
-
-    // DELETE
-    {
-      description: "Deletes a color from the database.",
-      name: "delete_color",
-      parameters: {
-        properties: {
-          id: {
-            description: "ID of the color to delete",
-            type: "string",
-          },
-        },
-        required: ["id"],
-        type: "object",
-      },
-    },
-
-    // UPDATE COLOR
-    {
+  // UPDATE COLOR
+  if (permission.edit) {
+    desc.push({
       description: "Updates an existing color with new name and colorCode",
       name: "update_color",
       parameters: {
@@ -134,7 +124,26 @@ export function colorsMethodsDescriptionArr() {
         required: ["id", "colorCode", "name"],
         type: "object",
       },
-    },
-  ];
+    });
+  }
+
+  // DELETE
+  if (permission.remove) {
+    desc.push({
+      description: "Deletes a color from the database.",
+      name: "delete_color",
+      parameters: {
+        properties: {
+          id: {
+            description: "ID of the color to delete",
+            type: "string",
+          },
+        },
+        required: ["id"],
+        type: "object",
+      },
+    });
+  }
+
   return desc;
 }

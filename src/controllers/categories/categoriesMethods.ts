@@ -1,6 +1,8 @@
 /* eslint-disable perfectionist/sort-modules */
 
+import { MethodDesc } from "../../global/types.js";
 import Category from "../../schemas/category.js";
+import { CRUD_PermissionTypes } from "../../schemas/user.js";
 import { getIO } from "../../socket/initSocket.js";
 
 /**
@@ -58,10 +60,10 @@ export async function updateCategoryLogic(id: string, name: string, stockType: s
 }
 
 /**
- * Returns an array of categories method descritpions for agentic AI to use
- * @returns methodDescriptions[]
+ * Returns an array of categories method descriptions for agentic AI to use
+ * @returns MethodDesc[]
  */
-export function categoriesMethodsDescriptionArr() {
+export function categoriesMethodsDescriptionArr(permission: CRUD_PermissionTypes) {
   const desc = [
     // GET CATEGORIES
     {
@@ -72,13 +74,17 @@ export function categoriesMethodsDescriptionArr() {
         type: "object",
       },
     },
-    {
-      description: `Adds a new category with a given name and stock type.
-      stockType must be exactly one of:
-      - "Boja-Količina"
-      - "Boja-Veličina-Količina"
+  ] as MethodDesc[];
 
-      This field is case-sensitive and must include proper accents and dashes.`,
+  // ADD CATEGORY
+  if (permission.add) {
+    desc.push({
+      description: `Adds a new category with a given name and stock type.
+        stockType must be exactly one of:
+        - "Boja-Količina"
+        - "Boja-Veličina-Količina"
+
+        This field is case-sensitive and must include proper accents and dashes.`,
       name: "add_category",
       parameters: {
         properties: {
@@ -95,29 +101,18 @@ export function categoriesMethodsDescriptionArr() {
         required: ["name", "stockType"],
         type: "object",
       },
-    },
-    // DELETE CATEGORY
-    {
-      description: "Deletes a category by its ID.",
-      name: "delete_category",
-      parameters: {
-        properties: {
-          id: {
-            description: "The ID of the category to delete.",
-            type: "string",
-          },
-        },
-        required: ["id"],
-        type: "object",
-      },
-    },
-    {
-      description: `Updates the name and stock type of a category by its ID.
-      stockType must be exactly one of:
-      - "Boja-Količina"
-      - "Boja-Veličina-Količina"
+    });
+  }
 
-      This value is case-sensitive.`,
+  // UPDATE CATEGORY
+  if (permission.edit) {
+    desc.push({
+      description: `Updates the name and stock type of a category by its ID.
+        stockType must be exactly one of:
+        - "Boja-Količina"
+        - "Boja-Veličina-Količina"
+
+        This value is case-sensitive.`,
       name: "update_category",
       parameters: {
         properties: {
@@ -138,7 +133,26 @@ export function categoriesMethodsDescriptionArr() {
         required: ["id", "name", "stockType"],
         type: "object",
       },
-    },
-  ];
+    });
+  }
+
+  // DELETE CATEGORY
+  if (permission.remove) {
+    desc.push({
+      description: "Deletes a category by its ID.",
+      name: "delete_category",
+      parameters: {
+        properties: {
+          id: {
+            description: "The ID of the category to delete.",
+            type: "string",
+          },
+        },
+        required: ["id"],
+        type: "object",
+      },
+    });
+  }
+
   return desc;
 }

@@ -1,6 +1,8 @@
 /* eslint-disable perfectionist/sort-modules */
 
+import { MethodDesc } from "../../global/types.js";
 import Supplier from "../../schemas/supplier.js";
+import { CRUD_PermissionTypes } from "../../schemas/user.js";
 import { getIO } from "../../socket/initSocket.js";
 
 /**
@@ -56,12 +58,12 @@ export async function deleteSupplierLogic(id: string) {
 }
 
 /**
- * Returns an array of supplier method descriptions for agentic AI to use
- * @returns methodDescriptions[]
+ * Returns an array of suppliers method descriptions for agentic AI to use
+ * @returns MethodDesc[]
  */
-export function suppliersMethodsDescriptionArr() {
+export function suppliersMethodsDescriptionArr(permission: CRUD_PermissionTypes) {
   const desc = [
-    // GET
+    // GET SUPPLIERS
     {
       description: "Get a list of all suppliers",
       name: "get_suppliers",
@@ -70,8 +72,11 @@ export function suppliersMethodsDescriptionArr() {
         type: "object",
       },
     },
-    // ADD
-    {
+  ] as MethodDesc[];
+
+  // ADD SUPPLIER
+  if (permission.add) {
+    desc.push({
       description: "Add a new supplier to the system",
       name: "add_supplier",
       parameters: {
@@ -84,9 +89,12 @@ export function suppliersMethodsDescriptionArr() {
         required: ["name"],
         type: "object",
       },
-    },
-    // UPDATE
-    {
+    });
+  }
+
+  // UPDATE SUPPLIER
+  if (permission.edit) {
+    desc.push({
       description: "Update an existing supplier's name using its ID",
       name: "update_supplier",
       parameters: {
@@ -103,9 +111,12 @@ export function suppliersMethodsDescriptionArr() {
         required: ["id", "name"],
         type: "object",
       },
-    },
-    // DELETE
-    {
+    });
+  }
+
+  // DELETE SUPPLIER
+  if (permission.remove) {
+    desc.push({
       description: "Delete a supplier by ID",
       name: "delete_supplier",
       parameters: {
@@ -118,8 +129,8 @@ export function suppliersMethodsDescriptionArr() {
         required: ["id"],
         type: "object",
       },
-    },
-  ];
+    });
+  }
 
   return desc;
 }

@@ -1,6 +1,8 @@
 /* eslint-disable perfectionist/sort-modules */
 
+import { MethodDesc } from "../../global/types.js";
 import Courier from "../../schemas/courier.js";
+import { CRUD_PermissionTypes } from "../../schemas/user.js";
 import { getIO } from "../../socket/initSocket.js";
 
 /**
@@ -60,12 +62,12 @@ export async function deleteCourierLogic(id: string) {
 }
 
 /**
- * Returns an array of couriers method descritpions for agentic AI to use
- * @returns methodDescriptions[]
+ * Returns an array of couriers method descriptions for agentic AI to use
+ * @returns MethodDesc[]
  */
-export function couriersMethodsDescriptionArr() {
+export function couriersMethodsDescriptionArr(permission: CRUD_PermissionTypes) {
   const desc = [
-    // GET
+    // GET COURIERS
     {
       description: "Fetches all couriers from the database.",
       name: "get_couriers",
@@ -74,8 +76,11 @@ export function couriersMethodsDescriptionArr() {
         type: "object",
       },
     },
-    // ADD
-    {
+  ] as MethodDesc[];
+
+  // ADD COURIER
+  if (permission.add) {
+    desc.push({
       description: "Creates a new courier in the database.",
       name: "add_courier",
       parameters: {
@@ -92,10 +97,12 @@ export function couriersMethodsDescriptionArr() {
         required: ["name", "deliveryPrice"],
         type: "object",
       },
-    },
+    });
+  }
 
-    // UPDATE
-    {
+  // UPDATE COURIER
+  if (permission.edit) {
+    desc.push({
       description: "Updates a courier by ID.",
       name: "update_courier",
       parameters: {
@@ -116,10 +123,12 @@ export function couriersMethodsDescriptionArr() {
         required: ["id", "name", "deliveryPrice"],
         type: "object",
       },
-    },
+    });
+  }
 
-    // DELETE
-    {
+  // DELETE COURIER
+  if (permission.remove) {
+    desc.push({
       description: "Deletes a courier by ID.",
       name: "delete_courier",
       parameters: {
@@ -132,7 +141,8 @@ export function couriersMethodsDescriptionArr() {
         required: ["id"],
         type: "object",
       },
-    },
-  ];
+    });
+  }
+
   return desc;
 }

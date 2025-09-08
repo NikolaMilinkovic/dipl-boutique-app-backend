@@ -3,14 +3,13 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from "express";
+import jwt from "jsonwebtoken";
 import OpenAI from "openai";
-import stream, { PassThrough } from "stream";
 
 // import { getIO } from "../socket/initSocket.js";
 import { AgentMessage, handleAgentMessages, handleUnauthorizedAgentMessages } from "../utils/AI/AgentSendMessage.js";
 import CustomError from "../utils/CustomError.js";
-import { convertAudioBufferToWav } from "../utils/helperMethods.js";
-import { betterConsoleLog, betterErrorLog } from "../utils/logMethods.js";
+import { betterErrorLog } from "../utils/logMethods.js";
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 interface AgentRequestBody {
@@ -19,13 +18,22 @@ interface AgentRequestBody {
 }
 export const handleAgentResponse = async (req: Request<unknown, unknown, AgentRequestBody>, res: Response, next: NextFunction) => {
   try {
-    // token
     const { messages, token } = req.body;
     if (messages.length === 0) return;
     let response;
+    let user;
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET ?? "") as { userId: string };
+      user = await User.findById(decoded.userId).lean();
+    }
 
-    if (token) response = await handleAgentMessages(messages);
+    if (token && user) response = await handleAgentMessages(messages, user);
     if (!token) response = await handleUnauthorizedAgentMessages(messages);
+
+    if (token && !user) {
+      next(new CustomError("User not found but token has been provided in the request, are you doing something illegal?", 500));
+      return;
+    }
 
     if (response === undefined) {
       next(new CustomError("There was an error while handling agent responses", 500));
@@ -43,6 +51,8 @@ export const handleAgentResponse = async (req: Request<unknown, unknown, AgentRe
 
 import ffmpeg from "fluent-ffmpeg";
 import { Readable } from "stream";
+
+import User from "../schemas/user.js";
 
 export const handleTranscribe = async (req: Request, res: Response, next: NextFunction) => {
   try {

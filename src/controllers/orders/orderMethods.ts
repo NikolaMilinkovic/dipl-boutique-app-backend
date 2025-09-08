@@ -8,11 +8,13 @@
 /* eslint-disable perfectionist/sort-modules */
 import mongoose from "mongoose";
 
+import { MethodDesc } from "../../global/types.js";
 import DressModel from "../../schemas/dress.js";
 import DressColorModel from "../../schemas/dressColor.js";
 import Order from "../../schemas/order.js";
 import PurseModel from "../../schemas/purse.js";
 import PurseColorModel from "../../schemas/purseColor.js";
+import { CRUD_PermissionTypes } from "../../schemas/user.js";
 import { getIO } from "../../socket/initSocket.js";
 import CustomError from "../../utils/CustomError.js";
 import { betterErrorLog } from "../../utils/logMethods.js";
@@ -49,11 +51,12 @@ export async function getAllOrdersLogic() {
 }
 
 /**
- * Returns an array of order method descriptions for agentic AI to use
- * @returns methodDescriptions[]
+ * Returns an array of orders method descriptions for agentic AI to use
+ * @returns MethodDesc[]
  */
-export function ordersMethodsDescriptionArr() {
+export function ordersMethodsDescriptionArr(permission: CRUD_PermissionTypes) {
   const desc = [
+    // GET UNPACKED ORDERS
     {
       description:
         "Fetch all unpacked orders. These are not yet packed or marked for packing. USE THIS ONLY WHEN WORKING WITH PACKED STATE. THIS DOES NOT COUNT AS PROCESSED / UNPROCESSED",
@@ -63,6 +66,7 @@ export function ordersMethodsDescriptionArr() {
         type: "object",
       },
     },
+    // GET PROCESSED ORDERS
     {
       description: "Fetch all orders that are marked as processed.",
       name: "get_processed_orders",
@@ -71,6 +75,7 @@ export function ordersMethodsDescriptionArr() {
         type: "object",
       },
     },
+    // GET UNPROCESSED ORDERS
     {
       description: "Fetch all orders that are not yet marked as processed.",
       name: "get_unprocessed_orders",
@@ -79,6 +84,7 @@ export function ordersMethodsDescriptionArr() {
         type: "object",
       },
     },
+    // GET ALL ORDERS
     {
       description: "Fetch all orders > processed and unprocessed.",
       name: "get_all_orders",
@@ -89,38 +95,7 @@ export function ordersMethodsDescriptionArr() {
     },
     {
       description:
-        "Remove a single order by its ID. This also restores stock quantities for all products in the order, depending on stock type (dress or purse), and emits real-time updates via socket events.",
-      name: "remove_order_by_id",
-      parameters: {
-        properties: {
-          orderId: {
-            description: "The unique ID of the order to be removed.",
-            type: "string",
-          },
-        },
-        required: ["orderId"],
-        type: "object",
-      },
-    },
-    {
-      description:
-        "Remove multiple orders by their IDs in a single transaction. This restores stock quantities for all products in each order—handling dresses with sizes and purses accordingly—and emits real-time socket updates for batch stock increases. If any product color or size is missing, the operation fails and rolls back.",
-      name: "remove_batch_orders_by_id",
-      parameters: {
-        properties: {
-          orderIds: {
-            description: "Array of unique order IDs to remove.",
-            items: { type: "string" },
-            type: "array",
-          },
-        },
-        required: ["orderIds"],
-        type: "object",
-      },
-    },
-    {
-      description:
-        "PACKS THE ORDER. Marks the order with the given ID as packed by setting 'packedIndicator' to true. Emits a socket event 'setStockIndicatorToTrue'. Returns true if successfull or false if failed",
+        "PACKS THE ORDER. Marks the order with the given ID as packed by setting 'packedIndicator' to true. Emits a socket event 'setStockIndicatorToTrue'. Returns true if successful or false if failed",
       name: "set_indicator_to_true",
       parameters: {
         properties: {
@@ -135,7 +110,7 @@ export function ordersMethodsDescriptionArr() {
     },
     {
       description:
-        "UNPACKS THE ORDER. Marks the order with the given ID as unpacked by setting 'packedIndicator' to false. Emits a socket event 'setStockIndicatorToFalse'. Returns true if successfull or false if failed",
+        "UNPACKS THE ORDER. Marks the order with the given ID as unpacked by setting 'packedIndicator' to false. Emits a socket event 'setStockIndicatorToFalse'. Returns true if successful or false if failed",
       name: "set_indicator_to_false",
       parameters: {
         properties: {
@@ -150,7 +125,7 @@ export function ordersMethodsDescriptionArr() {
     },
     {
       description:
-        "PACKS MULTIPLE ORDERS. Accepts an array of order IDs and marks each corresponding order as packed by setting 'packed' to true. Emits a real-time socket event 'packOrdersByIds' with the affected IDs. Returns true if successfull or false if failed",
+        "PACKS MULTIPLE ORDERS. Accepts an array of order IDs and marks each corresponding order as packed by setting 'packed' to true. Emits a real-time socket event 'packOrdersByIds' with the affected IDs. Returns true if successful or false if failed",
       name: "pack_orders_by_ids",
       parameters: {
         properties: {
@@ -164,7 +139,45 @@ export function ordersMethodsDescriptionArr() {
         type: "object",
       },
     },
-  ];
+  ] as MethodDesc[];
+
+  // REMOVE SINGLE ORDER
+  if (permission.remove) {
+    desc.push({
+      description:
+        "Remove a single order by its ID. This also restores stock quantities for all products in the order, depending on stock type (dress or purse), and emits real-time updates via socket events.",
+      name: "remove_order_by_id",
+      parameters: {
+        properties: {
+          orderId: {
+            description: "The unique ID of the order to be removed.",
+            type: "string",
+          },
+        },
+        required: ["orderId"],
+        type: "object",
+      },
+    });
+
+    // REMOVE MULTIPLE ORDERS
+    desc.push({
+      description:
+        "Remove multiple orders by their IDs in a single transaction. This restores stock quantities for all products in each order—handling dresses with sizes and purses accordingly—and emits real-time socket updates for batch stock increases. If any product color or size is missing, the operation fails and rolls back.",
+      name: "remove_batch_orders_by_id",
+      parameters: {
+        properties: {
+          orderIds: {
+            description: "Array of unique order IDs to remove.",
+            items: { type: "string" },
+            type: "array",
+          },
+        },
+        required: ["orderIds"],
+        type: "object",
+      },
+    });
+  }
+
   return desc;
 }
 

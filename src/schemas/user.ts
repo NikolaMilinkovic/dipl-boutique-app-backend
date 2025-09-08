@@ -1,18 +1,18 @@
 import { ObjectId } from "mongodb";
 import mongoose, { Document, Model, Schema } from "mongoose";
 
+export interface CRUD_PermissionTypes {
+  add: string;
+  edit: string;
+  remove: string;
+}
+
 export interface UserTypes extends Document {
   _id: ObjectId;
   password: string;
   permissions: PermissionTypes;
   role: string;
   username: string;
-}
-
-interface CRUD_PermissionTypes {
-  add: string;
-  edit: string;
-  remove: string;
 }
 
 interface PermissionTypes {

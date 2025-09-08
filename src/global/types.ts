@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 const AuthorValues = ["AI", "User", "Admin"] as const;
 export interface CategoryTypes {
@@ -46,7 +47,13 @@ export interface MessageTypes {
   function_call?: { arguments: string; name: string };
   role: "assistant" | "function" | "system" | "user";
 }
+export interface MethodDesc {
+  description: string;
+  name: string;
+  parameters: ParamSchema;
+}
 export type NewColorObjectTypes = NewDressColorTypes[] | NewPurseColorTypes[];
+
 export interface NewDressColorTypes {
   _id?: string;
   color: string;
@@ -73,15 +80,20 @@ export interface NewPurseColorTypes {
   colorCode: string;
   stock: number;
 }
-
+export interface Permission {
+  add: boolean;
+  edit: boolean;
+  remove: boolean;
+}
 export type ProductColorTypes = DressColorTypes | PurseColorTypes;
+
 // PURSE & DRESS TYPE
 export type ProductTypes = DressTypes | PurseTypes;
+
 export interface ProfileImageTypes {
   imageName: string;
   uri: string;
 }
-
 export interface PurseColorTypes {
   _id?: string;
   color: string;
@@ -102,6 +114,13 @@ export interface PurseTypes {
   supplier?: string;
   totalStock: number;
 }
+
 export type StockTypeTypes = "Boja-Količina" | "Boja-Veličina-Količina";
 
 type AuthorRole = (typeof AuthorValues)[number];
+
+interface ParamSchema {
+  properties: Record<string, any>;
+  required?: string[];
+  type: string;
+}
