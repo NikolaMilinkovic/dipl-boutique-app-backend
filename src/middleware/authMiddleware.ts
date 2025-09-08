@@ -90,7 +90,6 @@ export default function () {
         id: user._id.toString(),
         permissions: user.permissions,
         role: user.role,
-        settings: user.settings,
         username: user.username,
       };
       res.json({ message: "Uspešno logovanje na sistem.", token, user: safeUser });
