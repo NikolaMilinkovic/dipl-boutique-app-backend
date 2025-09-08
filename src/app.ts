@@ -1,5 +1,4 @@
 import cookieParser from "cookie-parser";
-import cors from "cors";
 import express from "express";
 import helmet from "helmet";
 import mongoose from "mongoose";
@@ -18,35 +17,9 @@ const app = express();
 
 app.use(helmet());
 
-let allowedOrigins: string[] = [];
-if (process.env.NODE_ENV === "production") {
-  if (process.env.ALLOWED_ORIGINS_PRODUCTION) {
-    allowedOrigins = process.env.ALLOWED_ORIGINS_PRODUCTION.split(",");
-  } else {
-    throw new Error("CORS origins not defined for production");
-  }
-} else if (process.env.NODE_ENV === "development") {
-  if (process.env.ALLOWED_ORIGINS_DEVELOPMENT) {
-    allowedOrigins = process.env.ALLOWED_ORIGINS_DEVELOPMENT.split(",");
-  } else {
-    throw new Error("CORS origins not defined for development");
-  }
-}
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-  }),
-);
+// CORS
+import { createCorsMiddleware } from "./middleware/corsMiddleware.js";
+app.use(createCorsMiddleware());
 
 // view engine setup
 const __filename = fileURLToPath(import.meta.url);
