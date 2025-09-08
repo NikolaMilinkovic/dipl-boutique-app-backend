@@ -1,5 +1,6 @@
 import cookieParser from "cookie-parser";
 import express from "express";
+import { rateLimit } from "express-rate-limit";
 import helmet from "helmet";
 import mongoose from "mongoose";
 import logger from "morgan";
@@ -15,6 +16,17 @@ if (process.env.NODE_ENV !== "production") {
 }
 const app = express();
 
+// Rate limit
+const limiter = rateLimit({
+  ipv6Subnet: 56,
+  legacyHeaders: false,
+  limit: 500,
+  standardHeaders: true,
+  windowMs: 15 * 60 * 1000,
+});
+app.use(limiter);
+
+// Helmet
 app.use(helmet());
 
 // CORS
